@@ -11,7 +11,7 @@
 
 #include "duplicates.h"
 
-#define OPLIST "aAmf:h:lq"
+#define OPTLIST "aAmf:h:lq"
 
 void usage(char *program_name)
 {
