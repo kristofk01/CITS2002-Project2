@@ -8,6 +8,9 @@
 #include <unistd.h>
 #include <string.h>
 #include <getopt.h>
+#include <dirent.h>
+
+#include <sys/param.h>
 
 #include "duplicates.h"
 
@@ -18,6 +21,36 @@ void usage(char *program_name)
     // TODO: remove m flag if we don't actually end up implementing it
     printf("Usage: %s [-aAm] [-l | -q] [-f filename] [-h hash] <directory...>\n",
             program_name);
+}
+
+void scan_directory(char *dirname)
+{
+    DIR *dir = opendir(dirname);
+    struct dirent *entry = NULL;
+
+    if(dir == NULL)
+    {
+        perror(dirname);
+        exit(EXIT_FAILURE);
+    }
+
+    while((entry = readdir(dir)) != NULL)
+    {
+        // ignore . and .. entries
+        if(!strcmp(entry->d_name, ".") || !strcmp(entry->d_name, ".."))
+            continue;
+        
+        char pathname[MAXPATHLEN];
+        sprintf(pathname, "%s/%s", dirname, entry->d_name);
+        printf("%s\n", pathname);
+
+        if(entry->d_type == DT_DIR)
+        {
+            scan_directory(pathname);
+        }
+    }
+
+    closedir(dir);
 }
 
 int main(int argc, char *argv[])
@@ -31,40 +64,45 @@ int main(int argc, char *argv[])
 //  opterr = 0;
     while((opt = getopt(argc, argv, OPTLIST)) != -1) 
     {
-        if(opt == 'a')
+        switch(opt)
         {
-            printf("a works.\n");
-        }
-        else if(opt == 'A')
-        {
-            printf("A works.\n");
-        }
-        else if(opt == 'f')
-        {
-            fname = strdup(optarg);
-            printf("f works. You typed: %s.\n", fname);     
-        }
-        else if(opt == 'h')
-        {
-            hashbrown = strdup(optarg);
-            printf("h works. You typed: %s.\nNOTE: h CANNOT HANDLE HASH YET AND IS SUBSTITUTED WITH STRING.\n", hashbrown);
-        }
-        else if(opt == 'l')
-        {
-            printf("l works.\n");
-        }
-        else if(opt == 'q')
-        {
-            printf( "q works.\n");
-        }
-//  UNKNOWN ARGUMENT, SO argc SET TO -1 SO WE TRIGGER USAGE
-        else
-        {
-            argc = -1;
+            case 'a':
+                printf("a works.\n");
+                break;
+
+            case 'A':
+                printf("A works.\n");
+                break;
+
+            case 'f':
+                fname = strdup(optarg);
+                printf("f works. You typed: %s.\n", fname);
+                break;
+            case 'h':
+                hashbrown = strdup(optarg);
+                printf("h works. You typed: %s.\nNOTE: h CANNOT HANDLE HASH YET AND IS SUBSTITUTED WITH STRING.\n", hashbrown);
+                break;
+
+            case 'l':
+                printf("l works.\n");
+                break;
+
+            case 'q':
+                printf( "q works.\n");
+                break;
+
+            default:
+                argc = -1;
+                break;
         }
     }
 
-    if(argc <= 0) usage(program_name);
+    if(argc <= 1) usage(program_name);
+
+//  OPEN AND PROCESS DIRECTORIES
+    // TODO: only works if we dont have any opt codes - i.e. argv[1] is the one and only dir
+    // we can process
+    scan_directory(argv[1]);
 
 //  Also not sure what these two do but they seem important?
 //  argc -= optind;
