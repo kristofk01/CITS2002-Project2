@@ -5,8 +5,9 @@
 // TODO: at the end, figure out what header files are needed for most .c files
 // and move them to duplicates.h
 #include <stdio.h>
-#include <unistd.h>
 #include <string.h>
+#include <stdbool.h>
+#include <unistd.h>
 #include <getopt.h>
 #include <dirent.h>
 
@@ -23,13 +24,15 @@ void usage(char *program_name)
             program_name);
 }
 
-void scan_directory(char *dirname)
+void scan_directory(char *dirname, bool all_flag)
 {
     DIR *dir = opendir(dirname);
     struct dirent *entry = NULL;
 
     if(dir == NULL)
     {
+        // TODO: check if this is how they actually want us to handle errors
+        // in the project spec...
         perror(dirname);
         exit(EXIT_FAILURE);
     }
@@ -42,12 +45,15 @@ void scan_directory(char *dirname)
         
         char pathname[MAXPATHLEN];
         sprintf(pathname, "%s/%s", dirname, entry->d_name);
-        printf("%s\n", pathname);
+
+        // print everything OR print everything but the files starting with "."
+        if(all_flag)
+            printf("%s\n", pathname);
+        else if(strncmp(entry->d_name, ".", 1))
+            printf("%s\n", pathname);
 
         if(entry->d_type == DT_DIR)
-        {
-            scan_directory(pathname);
-        }
+            scan_directory(pathname, all_flag);
     }
 
     closedir(dir);
@@ -57,6 +63,7 @@ int main(int argc, char *argv[])
 {
     char *program_name = argv[0];
     int opt;
+    bool all_flag = false; // for -a
     char *fname = NULL;
     char *hashbrown = NULL;
 
@@ -67,7 +74,7 @@ int main(int argc, char *argv[])
         switch(opt)
         {
             case 'a':
-                printf("a works.\n");
+                all_flag = true;
                 break;
 
             case 'A':
@@ -100,12 +107,8 @@ int main(int argc, char *argv[])
     if(argc <= 1) usage(program_name);
 
 //  OPEN AND PROCESS DIRECTORIES
-    // TODO: only works if we dont have any opt codes - i.e. argv[1] is the one and only dir
-    // we can process
-    scan_directory(argv[1]);
+    for(; optind < argc; optind++)
+        scan_directory(argv[optind], all_flag);
 
-//  Also not sure what these two do but they seem important?
-//  argc -= optind;
-//  argv += optind;
     exit(0);
 }
