@@ -2,24 +2,27 @@
 //  Name(s):             Kristof Kovacs , Daniel Ling
 //  Student number(s):   22869854       , 22896002
 
-#define _DEFAULT_SOURCE
-
+// TODO: at the end, figure out what header files are needed for most .c files
+// and move them to duplicates.h
 #include <stdio.h>
-#include <stdbool.h>
-#include <stdlib.h>
-#include <string.h>
 #include <unistd.h>
-
+#include <string.h>
 #include <getopt.h>
-#define OPTLIST "aAf:h:lq"
 
-void usage(int arg)
+#include "duplicates.h"
+
+#define OPLIST "aAmf:h:lq"
+
+void usage(char *program_name)
 {
-    if (arg == 1) printf("Something mysterious happens.\n");
+    // TODO: remove m flag if we don't actually end up implementing it
+    printf("Usage: %s [-aAm] [-l | -q] [-f filename] [-h hash] <directory...>\n",
+            program_name);
 }
 
 int main(int argc, char *argv[])
 {
+    char *program_name = argv[0];
     int opt;
     char *fname = NULL;
     char *hashbrown = NULL;
@@ -61,7 +64,7 @@ int main(int argc, char *argv[])
         }
     }
 
-    if(argc <= 0) usage(1);
+    if(argc <= 0) usage(program_name);
 
 //  Also not sure what these two do but they seem important?
 //  argc -= optind;
