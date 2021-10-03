@@ -64,7 +64,7 @@ int main(int argc, char *argv[])
         }
     }
 
-    if(argc <= 0) usage(program_name);
+    if(argc <= 1) usage(program_name);
 
 //  Also not sure what these two do but they seem important?
 //  argc -= optind;
