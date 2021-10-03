@@ -12,17 +12,28 @@
 #include <dirent.h>
 
 #include <sys/param.h>
+#include <sys/stat.h>
 
 #include "duplicates.h"
 
 #define OPTLIST "aAmf:h:lq"
 
-void usage(char *program_name)
+extern char *strSHA2(char *filename);
+
+// ::::::: THIS IS VERY VERY WORK IN PROGRESS :::::::
+D_FILE *files = NULL;
+int nfiles = 0;
+
+void add_file(char *name, int size)
 {
-    // TODO: remove m flag if we don't actually end up implementing it
-    printf("Usage: %s [-aAm] [-l | -q] [-f filename] [-h hash] <directory...>\n",
-            program_name);
+    files = realloc(files, (nfiles+1) * sizeof(D_FILE));
+    CHECK_ALLOC(files);
+
+    files[nfiles].name = strdup(name);
+    files[nfiles].size = size;
+    ++nfiles;
 }
+// ::::::::::::::::::::::::::::::::::::::::::::::::::
 
 void scan_directory(char *dirname, bool all_flag)
 {
@@ -45,18 +56,42 @@ void scan_directory(char *dirname, bool all_flag)
         
         char pathname[MAXPATHLEN];
         sprintf(pathname, "%s/%s", dirname, entry->d_name);
+        
+        struct stat statinfo;
+        if(stat(pathname, &statinfo) != 0)
+        {
+            perror(pathname);
+            exit(EXIT_FAILURE);
+        }
 
-        // print everything OR print everything but the files starting with "."
-        if(all_flag)
-            printf("%s\n", pathname);
-        else if(strncmp(entry->d_name, ".", 1))
-            printf("%s\n", pathname);
-
-        if(entry->d_type == DT_DIR)
+        // if the current entry is a file
+        if(entry->d_type == DT_REG)
+        {
+            // handle if we have used '-a' flag or not...
+            if(all_flag)
+            {
+                add_file(pathname, statinfo.st_size);
+            }
+            else if(!all_flag && strncmp(entry->d_name, ".", 1))
+            {
+                add_file(pathname, statinfo.st_size);
+            }
+        }
+        else if(entry->d_type == DT_DIR)
+        {
+            // if the current entry is a directory then traverse it
             scan_directory(pathname, all_flag);
+        }
     }
 
     closedir(dir);
+}
+
+void usage(char *program_name)
+{
+    // TODO: remove m flag if we don't actually end up implementing it
+    printf("Usage: %s [-aAm] [-l | -q] [-f filename | -h hash] <directory...>\n",
+            program_name);
 }
 
 int main(int argc, char *argv[])
@@ -109,6 +144,14 @@ int main(int argc, char *argv[])
 //  OPEN AND PROCESS DIRECTORIES
     for(; optind < argc; optind++)
         scan_directory(argv[optind], all_flag);
+
+// ::::DEBUG::::
+    for(int i = 0; i < nfiles; ++i) {
+        printf("File %i: %s\t\t%i\n", i, files[i].name, files[i].size);
+    }
+// :::::::::::::
+
+    free(files);
 
     exit(0);
 }

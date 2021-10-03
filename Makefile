@@ -11,4 +11,5 @@ $(PROJECT) : $(OBJ)
 %.o : %.c $(HEADERS)
 	$(C11) $(FLAGS) -c $<
 
-# TODO: add more targets, e.g. `clean:` ?
+clean:
+	rm -f $(PROJECT) $(OBJ)
