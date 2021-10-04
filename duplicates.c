@@ -66,7 +66,7 @@ void scan_directory(char *dirname, bool all_flag)
         }
 
         // if the current entry is a file
-        if(entry->d_type == DT_REG)
+        if(S_ISREG(statinfo.st_mode))
         {
             // handle if we have used '-a' flag or not...
             if(all_flag)
@@ -78,7 +78,7 @@ void scan_directory(char *dirname, bool all_flag)
                 add_file(pathname, statinfo.st_size);
             }
         }
-        else if(entry->d_type == DT_DIR)
+        else if(S_ISDIR(statinfo.st_mode))
         {
             // if the current entry is a directory then traverse it
             scan_directory(pathname, all_flag);
@@ -143,8 +143,8 @@ int main(int argc, char *argv[])
     if(argc <= 1) usage(program_name);
 
 //  OPEN AND PROCESS DIRECTORIES
-    for(; optind < argc; optind++)
-        scan_directory(argv[optind], all_flag);
+    for(int i = optind; i < argc; i++)
+        scan_directory(argv[i], all_flag);
 
 // ::::DEBUG::::
     printf("No.\t\tSize\tFilename\t\tHash\n");
