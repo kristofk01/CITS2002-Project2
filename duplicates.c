@@ -31,6 +31,7 @@ void add_file(char *name, int size)
 
     files[nfiles].name = strdup(name);
     files[nfiles].size = size;
+    files[nfiles].hash = strSHA2(name);
     ++nfiles;
 }
 // ::::::::::::::::::::::::::::::::::::::::::::::::::
@@ -146,8 +147,10 @@ int main(int argc, char *argv[])
         scan_directory(argv[optind], all_flag);
 
 // ::::DEBUG::::
+    printf("No.\t\tSize\tFilename\t\tHash\n");
     for(int i = 0; i < nfiles; ++i) {
-        printf("File %i: %s\t\t%i\n", i, files[i].name, files[i].size);
+        printf("File %i: \t%i\t%s\t%s\n",
+            i, files[i].size, files[i].name, files[i].hash);
     }
 // :::::::::::::
 
