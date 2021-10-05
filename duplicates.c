@@ -158,12 +158,14 @@ int main(int argc, char *argv[])
                 for(int i = 0; i < nfiles; i++){
                     if(strcmp(files[i].name, files[i].parent->name) != 0) 
                     {
+                        free(files);
 // ===============================================================================
                         printf("EXIT_FAILURE (remember to remove this later).\n");
 // ===============================================================================
                         exit(EXIT_FAILURE);
                     }
                 }
+                free(files);
 // ===============================================================================
                 printf("EXIT_SUCCESS (remember to remove this later).\n");
 // ===============================================================================
