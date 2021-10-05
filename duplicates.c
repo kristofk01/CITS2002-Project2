@@ -201,7 +201,26 @@ int main(int argc, char *argv[])
             printf("%s \t\t%s\n", parent->name, files[i].name);
     }
 // :::::::::::::
+// THIS SECTION RESERVED FOR WHEN ONLY DIRECTORY ENTERED.
+int nfiles_unique = 0;
+int totalsize = 0;
+int totalsize_unique = 0;
 
+for (int i = 0; i < nfiles; i++)
+{
+    if (strcmp(files[i].name, files[i].parent->name) == 0)
+    {
+        nfiles_unique += 1;
+        totalsize_unique += files[i].size;
+    }
+    totalsize += files[i].size;
+}
+
+printf("Total files: %u\n", nfiles);
+printf("Total size: %u\n", totalsize);
+printf("Total unique files: %u\n", nfiles_unique);
+printf("Total min. size: %u\n", totalsize_unique);
+// :::::::::::::
     free(files);
 
     exit(EXIT_SUCCESS);
