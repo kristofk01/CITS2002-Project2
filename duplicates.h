@@ -6,10 +6,10 @@
 
 #define CHECK_ALLOC(p) if(p == NULL) { perror(__func__); exit(EXIT_FAILURE); }
 
-typedef struct 
+typedef struct _D_FILE
 {
-    char *name; // path
-    char *hash;
-    int   size;
-    int  *parent;
+    char    *name; // path
+    char    *hash;
+    int     size;
+    struct _D_FILE  *parent;
 } D_FILE;

@@ -20,7 +20,6 @@
 
 extern char *strSHA2(char *filename);
 
-// ::::::: THIS IS VERY VERY WORK IN PROGRESS :::::::
 D_FILE *files = NULL;
 int nfiles = 0;
 
@@ -29,12 +28,33 @@ void add_file(char *name, int size)
     files = realloc(files, (nfiles+1) * sizeof(D_FILE));
     CHECK_ALLOC(files);
 
-    files[nfiles].name = strdup(name);
-    files[nfiles].size = size;
-    files[nfiles].hash = strSHA2(name);
+    files[nfiles].name      = strdup(name);
+    files[nfiles].size      = size;
+    files[nfiles].hash      = strSHA2(name);
+    files[nfiles].parent    = NULL;
     ++nfiles;
 }
-// ::::::::::::::::::::::::::::::::::::::::::::::::::
+
+void identify_duplicates(void)
+{
+    int j = 0;
+    while(j < nfiles)
+    {
+        if(files[j].parent == NULL)
+        {
+            char *target_hash = files[j].hash;
+            for(int i = 0; i < nfiles; ++i)
+            {
+                // if the file has the same hash and is an orphan
+                if(strcmp(target_hash, files[i].hash) == 0 && files[i].parent == NULL)
+                {
+                    files[i].parent = &files[j];
+                }
+            }
+        }
+        ++j;
+    }
+}
 
 void scan_directory(char *dirname, bool all_flag)
 {
@@ -149,12 +169,24 @@ int main(int argc, char *argv[])
 // ::::DEBUG::::
     printf("No.\t\tSize\tFilename\t\tHash\n");
     for(int i = 0; i < nfiles; ++i) {
-        printf("File %i: \t%i\t%s\t%s\n",
-            i, files[i].size, files[i].name, files[i].hash);
+        printf("File %i: \t%i\t%s\t%s\t%p\n",
+            i, files[i].size, files[i].name, files[i].hash, (void *)files[i].parent);
+    }
+// :::::::::::::
+
+    identify_duplicates();
+
+// ::::DEBUG::::
+    printf("\nParent\t\t\t\tFilename\n");
+    for(int i = 0; i < nfiles; ++i) {
+        D_FILE *parent = files[i].parent;
+        //printf("%p\n", (void *)parent);
+        if(parent != NULL)
+            printf("%s \t\t%s\n", parent->name, files[i].name);
     }
 // :::::::::::::
 
     free(files);
 
-    exit(0);
+    exit(EXIT_SUCCESS);
 }
