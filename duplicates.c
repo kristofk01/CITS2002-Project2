@@ -28,10 +28,10 @@ void add_file(char *name, int size)
     files = realloc(files, (nfiles+1) * sizeof(D_FILE));
     CHECK_ALLOC(files);
 
-    files[nfiles].name = strdup(name);
-    files[nfiles].size = size;
-    files[nfiles].hash = strSHA2(name);
-    files[nfiles].parent = NULL;
+    files[nfiles].name      = strdup(name);
+    files[nfiles].size      = size;
+    files[nfiles].hash      = strSHA2(name);
+    files[nfiles].parent    = NULL;
     ++nfiles;
 }
 
@@ -40,14 +40,16 @@ void identify_duplicates(void)
     int j = 0;
     while(j < nfiles)
     {
-        char *target_hash = files[j].hash;
-        printf("FINDING FILES WITH HASH = %s\n", target_hash);
-        for(int i = 0; i < nfiles; ++i)
+        if(files[j].parent == NULL)
         {
-            // if the file has the same hash
-            if(strcmp(target_hash, files[i].hash))
+            char *target_hash = files[j].hash;
+            for(int i = 0; i < nfiles; ++i)
             {
-                files[i].parent = &files[j];
+                // if the file has the same hash and is an orphan
+                if(strcmp(target_hash, files[i].hash) == 0 && files[i].parent == NULL)
+                {
+                    files[i].parent = &files[j];
+                }
             }
         }
         ++j;
@@ -167,8 +169,8 @@ int main(int argc, char *argv[])
 // ::::DEBUG::::
     printf("No.\t\tSize\tFilename\t\tHash\n");
     for(int i = 0; i < nfiles; ++i) {
-        printf("File %i: \t%i\t%s\t%s\n",
-            i, files[i].size, files[i].name, files[i].hash);
+        printf("File %i: \t%i\t%s\t%s\t%p\n",
+            i, files[i].size, files[i].name, files[i].hash, (void *)files[i].parent);
     }
 // :::::::::::::
 

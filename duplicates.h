@@ -12,5 +12,4 @@ typedef struct _D_FILE
     char    *hash;
     int     size;
     struct _D_FILE  *parent;
-    //int *parent;
 } D_FILE;
