@@ -122,6 +122,7 @@ int main(int argc, char *argv[])
     bool all_flag = false; // for -a
     char *fname = NULL;
     char *hashbrown = NULL;
+    char *directory = NULL;
 
 //  I literally have no idea what this is for but it seems important?.
 //  opterr = 0;
@@ -151,7 +152,22 @@ int main(int argc, char *argv[])
                 break;
 
             case 'q':
-                printf( "q works.\n");
+                directory = strdup(optarg);
+                scan_directory(directory, all_flag);
+                identify_duplicates();
+                for(int i = 0; i < nfiles; i++){
+                    if(strcmp(files[i].name, files[i].parent->name) != 0) 
+                    {
+// ===============================================================================
+                        printf("EXIT_FAILURE (remember to remove this later).\n");
+// ===============================================================================
+                        exit(EXIT_FAILURE);
+                    }
+                }
+// ===============================================================================
+                printf("EXIT_SUCCESS (remember to remove this later).\n");
+// ===============================================================================
+                exit(EXIT_SUCCESS);
                 break;
 
             default:
