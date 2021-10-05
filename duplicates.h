@@ -11,4 +11,5 @@ typedef struct
     char *name; // path
     char *hash;
     int   size;
+    int  *parent;
 } D_FILE;
