@@ -152,6 +152,15 @@ int main(int argc, char *argv[])
                 break;
 
             case 'q':
+                /*
+                 * We shouldn't do any function calling in the switch statement
+                 * just because it will get very messy quickly.
+                 * Also, this causes a seg fault on the line below (strdup(optarg))
+                 * as -q doesn't take any arguments - it makes no sense anyway!
+                 * So, consider doing all dir scanning and processing below and outside
+                 * of the switch block - similarly to how I did -a. Or maybe use #define
+                 * and #if defined to control calls to printf?
+                 */
                 directory = strdup(optarg);
                 scan_directory(directory, all_flag);
                 identify_duplicates();
