@@ -108,6 +108,19 @@ void scan_directory(char *dirname, bool all_flag)
     closedir(dir);
 }
 
+void compute_statistics(int *nfiles_unique, int *total_size_unique, int *total_size)
+{
+    for (int i = 0; i < nfiles; i++)
+    {
+        if (strcmp(files[i].name, files[i].parent->name) == 0)
+        {
+            *nfiles_unique += 1;
+            *total_size_unique += files[i].size;
+        }
+        *total_size += files[i].size;
+    }
+}
+
 void usage(char *program_name)
 {
     // TODO: remove m flag if we don't actually end up implementing it
@@ -120,9 +133,9 @@ int main(int argc, char *argv[])
     char *program_name = argv[0];
     int opt;
     bool all_flag = false; // for -a
+    bool q_flag = false;
     char *fname = NULL;
     char *hashbrown = NULL;
-    char *directory = NULL;
 
 //  I literally have no idea what this is for but it seems important?.
 //  opterr = 0;
@@ -152,33 +165,7 @@ int main(int argc, char *argv[])
                 break;
 
             case 'q':
-                /*
-                 * We shouldn't do any function calling in the switch statement
-                 * just because it will get very messy quickly.
-                 * Also, this causes a seg fault on the line below (strdup(optarg))
-                 * as -q doesn't take any arguments - it makes no sense anyway!
-                 * So, consider doing all dir scanning and processing below and outside
-                 * of the switch block - similarly to how I did -a. Or maybe use #define
-                 * and #if defined to control calls to printf?
-                 */
-                directory = strdup(optarg);
-                scan_directory(directory, all_flag);
-                identify_duplicates();
-                for(int i = 0; i < nfiles; i++){
-                    if(strcmp(files[i].name, files[i].parent->name) != 0) 
-                    {
-                        free(files);
-// ===============================================================================
-                        printf("EXIT_FAILURE (remember to remove this later).\n");
-// ===============================================================================
-                        exit(EXIT_FAILURE);
-                    }
-                }
-                free(files);
-// ===============================================================================
-                printf("EXIT_SUCCESS (remember to remove this later).\n");
-// ===============================================================================
-                exit(EXIT_SUCCESS);
+                q_flag = true;
                 break;
 
             default:
@@ -211,27 +198,37 @@ int main(int argc, char *argv[])
         if(parent != NULL)
             printf("%s \t\t%s\n", parent->name, files[i].name);
     }
+    printf("\n");
 // :::::::::::::
-// THIS SECTION RESERVED FOR WHEN ONLY DIRECTORY ENTERED.
-int nfiles_unique = 0;
-int totalsize = 0;
-int totalsize_unique = 0;
 
-for (int i = 0; i < nfiles; i++)
-{
-    if (strcmp(files[i].name, files[i].parent->name) == 0)
+    int nfiles_unique = 0;
+    int total_size_unique = 0;
+    int total_size = 0;
+    compute_statistics(&nfiles_unique, &total_size_unique, &total_size);
+
+    // handle -q
+    if(q_flag)
     {
-        nfiles_unique += 1;
-        totalsize_unique += files[i].size;
+        if(nfiles == nfiles_unique)
+        {
+            printf("EXIT_SUCCESS (remember to remove this later).\n");
+            exit(EXIT_SUCCESS);
+        }
+        else
+        {
+            printf("EXIT_FAILURE (remember to remove this later).\n");
+            exit(EXIT_FAILURE);
+        }
     }
-    totalsize += files[i].size;
-}
+    else // report statistics
+    {
+        // TODO: remove left printf column
+        printf("Total files:\t");           printf("%u\n", nfiles);
+        printf("Total size:\t");            printf("%u\n", total_size);
+        printf("Total unique files:\t");    printf("%u\n", nfiles_unique);
+        printf("Total min. size:\t");       printf("%u\n", total_size_unique);
+    }
 
-printf("Total files: %u\n", nfiles);
-printf("Total size: %u\n", totalsize);
-printf("Total unique files: %u\n", nfiles_unique);
-printf("Total min. size: %u\n", totalsize_unique);
-// :::::::::::::
     free(files);
 
     exit(EXIT_SUCCESS);
