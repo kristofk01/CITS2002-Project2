@@ -35,19 +35,23 @@ void add_file(char *name, int size)
     ++nfiles;
 }
 
+// A duplicate file is defined as having a parent who is not itself.
+// In other words, unique files are the parents of themselves.
 void identify_duplicates(void)
 {
     int j = 0;
     while(j < nfiles)
     {
-        if(files[j].parent == NULL)
+        if(files[j].parent == NULL) // if we have not yet considered file j, then...
         {
+            // grab its hash and find any files with equivalent hash
             char *target_hash = files[j].hash;
             for(int i = 0; i < nfiles; ++i)
             {
-                // if the file has the same hash and is an orphan
+                // if the file has the same hash and is an orphan (not yet considered)
                 if(strcmp(target_hash, files[i].hash) == 0 && files[i].parent == NULL)
                 {
+                    // set its parent
                     files[i].parent = &files[j];
                 }
             }
@@ -56,7 +60,7 @@ void identify_duplicates(void)
     }
 }
 
-void scan_directory(char *dirname, bool all_flag)
+void scan_directory(char *dirname, bool a_flag)
 {
     DIR *dir = opendir(dirname);
     struct dirent *entry = NULL;
@@ -88,12 +92,12 @@ void scan_directory(char *dirname, bool all_flag)
         // if the current entry is a file
         if(S_ISREG(statinfo.st_mode))
         {
-            // handle if we have used '-a' flag or not...
-            if(all_flag)
+            // handle -a
+            if(a_flag)
             {
                 add_file(pathname, statinfo.st_size);
             }
-            else if(!all_flag && strncmp(entry->d_name, ".", 1))
+            else if(!a_flag && strncmp(entry->d_name, ".", 1))
             {
                 add_file(pathname, statinfo.st_size);
             }
@@ -101,7 +105,7 @@ void scan_directory(char *dirname, bool all_flag)
         else if(S_ISDIR(statinfo.st_mode))
         {
             // if the current entry is a directory then traverse it
-            scan_directory(pathname, all_flag);
+            scan_directory(pathname, a_flag);
         }
     }
 
@@ -132,19 +136,21 @@ int main(int argc, char *argv[])
 {
     char *program_name = argv[0];
     int opt;
-    bool all_flag = false; // for -a
+
+    // these booleans are getting ridiculous, figure out another way
+    bool a_flag = false; // for -a
     bool q_flag = false;
+    bool l_flag = false;
+    
     char *fname = NULL;
     char *hashbrown = NULL;
 
-//  I literally have no idea what this is for but it seems important?.
-//  opterr = 0;
     while((opt = getopt(argc, argv, OPTLIST)) != -1) 
     {
         switch(opt)
         {
             case 'a':
-                all_flag = true;
+                a_flag = true;
                 break;
 
             case 'A':
@@ -161,7 +167,7 @@ int main(int argc, char *argv[])
                 break;
 
             case 'l':
-                printf("l works.\n");
+                l_flag = true;
                 break;
 
             case 'q':
@@ -178,19 +184,21 @@ int main(int argc, char *argv[])
 
 //  OPEN AND PROCESS DIRECTORIES
     for(int i = optind; i < argc; i++)
-        scan_directory(argv[i], all_flag);
+        scan_directory(argv[i], a_flag);
 
-// ::::DEBUG::::
+#define _DEBUG_PROJECT_
+
+#ifdef _DEBUG_PROJECT_
     printf("No.\t\tSize\tFilename\t\tHash\n");
     for(int i = 0; i < nfiles; ++i) {
         printf("File %i: \t%i\t%s\t%s\t%p\n",
             i, files[i].size, files[i].name, files[i].hash, (void *)files[i].parent);
     }
-// :::::::::::::
+#endif
 
     identify_duplicates();
 
-// ::::DEBUG::::
+#ifdef _DEBUG_PROJECT_
     printf("\nParent\t\t\t\tFilename\n");
     for(int i = 0; i < nfiles; ++i) {
         D_FILE *parent = files[i].parent;
@@ -199,14 +207,64 @@ int main(int argc, char *argv[])
             printf("%s \t\t%s\n", parent->name, files[i].name);
     }
     printf("\n");
-// :::::::::::::
+#endif
 
     int nfiles_unique = 0;
     int total_size_unique = 0;
     int total_size = 0;
     compute_statistics(&nfiles_unique, &total_size_unique, &total_size);
 
-    // handle -q
+// HANDLE -l
+    if(l_flag)
+    {
+        bool seen[nfiles];
+        int j = 0;
+
+        while(j < nfiles)
+        {
+            char buffer[MAXPATHLEN];
+            char big_buffer[MAXPATHLEN * nfiles];
+            int count = 0;
+            // if we are looking at something that is a parent of itself
+            if (strcmp(files[j].name, files[j].parent->name) == 0)
+            {
+                sprintf(buffer, "%s\t", files[j].name);
+                //printf("\t%s\n", buffer);
+                //seen[j] = true;
+                ++j;
+                continue;
+            }
+
+            for(int i = 0; i < nfiles; ++i)
+            {
+                // if we have not checked this file and it has a parent other than itself
+                // then we know its a duplicate of the jth file...
+                if(!seen[i] && strcmp(files[j].name, files[i].parent->name) != 0)
+                {
+                    strcat(big_buffer, files[i].name);
+                    strcat(big_buffer, "\t");
+                    //printf("%s\n", big_buffer);
+                    seen[i] = true;
+                    ++count;
+                }
+            }
+            
+            if(count > 1)
+            {
+                char *result = malloc((MAXPATHLEN * nfiles) * sizeof(char *));
+                CHECK_ALLOC(result);
+
+                strcat(result, buffer);
+                strcat(result, big_buffer);
+                printf("%s\n", result);
+
+                free(result);
+            }
+            ++j;
+        }
+    }
+
+// HANDLE -q
     if(q_flag)
     {
         if(nfiles == nfiles_unique)
@@ -220,7 +278,7 @@ int main(int argc, char *argv[])
             exit(EXIT_FAILURE);
         }
     }
-    else // report statistics
+    else if(!q_flag && !l_flag) // report statistics
     {
         // TODO: remove left printf column
         printf("Total files:\t");           printf("%u\n", nfiles);
