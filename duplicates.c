@@ -4,9 +4,7 @@
 
 // TODO: at the end, figure out what header files are needed for most .c files
 // and move them to duplicates.h
-#include <stdio.h>
-#include <string.h>
-#include <stdbool.h>
+
 #include <unistd.h>
 #include <getopt.h>
 #include <dirent.h>
@@ -20,23 +18,11 @@
 
 extern char *strSHA2(char *filename);
 
-D_FILE *files = NULL;
-int nfiles = 0;
-
-void add_file(char *name, int size)
-{
-    files = realloc(files, (nfiles+1) * sizeof(D_FILE));
-    CHECK_ALLOC(files);
-
-    files[nfiles].name      = strdup(name);
-    files[nfiles].size      = size;
-    files[nfiles].hash      = strSHA2(name);
-    files[nfiles].parent    = NULL;
-    ++nfiles;
-}
+HASHTABLE *hashtable;
 
 // A duplicate file is defined as having a parent who is not itself.
 // In other words, unique files are the parents of themselves.
+/*
 void identify_duplicates(void)
 {
     int j = 0;
@@ -59,6 +45,7 @@ void identify_duplicates(void)
         ++j;
     }
 }
+*/
 
 void scan_directory(char *dirname, bool a_flag)
 {
@@ -89,22 +76,27 @@ void scan_directory(char *dirname, bool a_flag)
             exit(EXIT_FAILURE);
         }
 
-        // if the current entry is a file
+        // if the current entry is a file, add it to the hashtable
         if(S_ISREG(statinfo.st_mode))
         {
+            D_FILE file;
+            file.hash = strSHA2(pathname);
+            file.name = strdup(pathname);
+            file.size = statinfo.st_size;
+
             // handle -a
             if(a_flag)
             {
-                add_file(pathname, statinfo.st_size);
+                hashtable_add(hashtable, file);
             }
             else if(!a_flag && strncmp(entry->d_name, ".", 1))
             {
-                add_file(pathname, statinfo.st_size);
+                hashtable_add(hashtable, file);
             }
         }
         else if(S_ISDIR(statinfo.st_mode))
         {
-            // if the current entry is a directory then traverse it
+            // the current entry is a directory so traverse it
             scan_directory(pathname, a_flag);
         }
     }
@@ -112,6 +104,7 @@ void scan_directory(char *dirname, bool a_flag)
     closedir(dir);
 }
 
+/*
 void compute_statistics(int *nfiles_unique, int *total_size_unique, int *total_size)
 {
     for (int i = 0; i < nfiles; i++)
@@ -124,12 +117,19 @@ void compute_statistics(int *nfiles_unique, int *total_size_unique, int *total_s
         *total_size += files[i].size;
     }
 }
+*/
 
 void usage(char *program_name)
 {
     // TODO: remove m flag if we don't actually end up implementing it
-    printf("Usage: %s [-aAm] [-l | -q] [-f filename | -h hash] <directory...>\n",
-            program_name);
+    printf("Usage: %s [options] <directory...>\n", program_name);
+    printf("-a\t\tinclude directory entries whose names begin with a dot (.)\n"
+           "-A\t\treport if the program attemps the advanced version\n"
+           "-f=FILENAME\tlist all files whose SHA2 hash matches that of the indicated file\n"
+           "-h=HASH\t\tlist all files with the indicated SHA2 hash\n"
+           "-l\t\tlist all duplicates files\n"
+           "-m\t\tminimizes the total number of bytes required to store all files' data\n"
+           "-q\t\tquietly test if any duplicates files exist\n\n");
 }
 
 int main(int argc, char *argv[])
@@ -139,11 +139,11 @@ int main(int argc, char *argv[])
 
     // these booleans are getting ridiculous, figure out another way
     bool a_flag = false; // for -a
-    bool q_flag = false;
-    bool l_flag = false;
+    //bool q_flag = false;
+    //bool l_flag = false;
     
     char *fname = NULL;
-    char *hashbrown = NULL;
+    char *hash_str = NULL;
 
     while((opt = getopt(argc, argv, OPTLIST)) != -1) 
     {
@@ -162,16 +162,16 @@ int main(int argc, char *argv[])
                 printf("f works. You typed: %s.\n", fname);
                 break;
             case 'h':
-                hashbrown = strdup(optarg);
-                printf("h works. You typed: %s.\nNOTE: h CANNOT HANDLE HASH YET AND IS SUBSTITUTED WITH STRING.\n", hashbrown);
+                hash_str = strdup(optarg);
+                printf("h works. You typed: %s.\nNOTE: h CANNOT HANDLE HASH YET AND IS SUBSTITUTED WITH STRING.\n", hash_str);
                 break;
 
             case 'l':
-                l_flag = true;
+                //l_flag = true;
                 break;
 
             case 'q':
-                q_flag = true;
+                //q_flag = true;
                 break;
 
             default:
@@ -182,12 +182,17 @@ int main(int argc, char *argv[])
 
     if(argc <= 1) usage(program_name);
 
+    hashtable = hashtable_new();
+
 //  OPEN AND PROCESS DIRECTORIES
     for(int i = optind; i < argc; i++)
         scan_directory(argv[i], a_flag);
 
-#define _DEBUG_PROJECT_
+//  IDENTIFY DUPLICATES
 
+
+/*
+//#define _DEBUG_PROJECT_
 #ifdef _DEBUG_PROJECT_
     printf("No.\t\tSize\tFilename\t\tHash\n");
     for(int i = 0; i < nfiles; ++i) {
@@ -286,8 +291,8 @@ int main(int argc, char *argv[])
         printf("Total unique files:\t");    printf("%u\n", nfiles_unique);
         printf("Total min. size:\t");       printf("%u\n", total_size_unique);
     }
-
     free(files);
+    */
 
     exit(EXIT_SUCCESS);
 }
