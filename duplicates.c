@@ -20,7 +20,13 @@ extern char *strSHA2(char *filename);
 
 HASHTABLE *hashtable;
 
-void scan_directory(char *dirname, bool a_flag)
+//Used to store the filename in -f.
+char *f_filename;
+
+//Used to store the hashname in -f and -h.
+char *checked_hash;
+
+void scan_directory(char *dirname, bool a_flag, bool f_flag)
 {
     DIR *dir = opendir(dirname);
     struct dirent *entry = NULL;
@@ -57,6 +63,16 @@ void scan_directory(char *dirname, bool a_flag)
             file.name = strdup(pathname);
             file.size = statinfo.st_size;
 
+// DELETE LATER
+//          printf("%s ", file.name);
+// DELETE LATER
+
+            // handle -f
+            if(f_flag)
+            {
+                if(strcmp(file.name,f_filename) == 0) checked_hash = file.hash;
+            }
+
             // handle -a
             if(a_flag)
             {
@@ -70,9 +86,12 @@ void scan_directory(char *dirname, bool a_flag)
         else if(S_ISDIR(statinfo.st_mode))
         {
             // the current entry is a directory so traverse it
-            scan_directory(pathname, a_flag);
+            scan_directory(pathname, a_flag, f_flag);
         }
     }
+// DELETE LATER
+//          printf("\n");
+// DELETE LATER
 
     closedir(dir);
 }
@@ -98,10 +117,9 @@ int main(int argc, char *argv[])
     // these booleans are getting ridiculous, figure out another way
     bool a_flag = false; // for -a
     bool q_flag = false;
+    bool f_flag = false;
+    bool h_flag = false;
     bool l_flag = false;
-    
-    char *fname = NULL;
-    char *hash_str = NULL;
 
     while((opt = getopt(argc, argv, OPTLIST)) != -1) 
     {
@@ -116,12 +134,13 @@ int main(int argc, char *argv[])
                 break;
 
             case 'f':
-                fname = strdup(optarg);
-                printf("f works. You typed: %s.\n", fname);
+                f_flag = true;
+                f_filename = strdup(optarg);
                 break;
+
             case 'h':
-                hash_str = strdup(optarg);
-                printf("h works. You typed: %s.\nNOTE: h CANNOT HANDLE HASH YET AND IS SUBSTITUTED WITH STRING.\n", hash_str);
+                h_flag = true;
+                checked_hash = strdup(optarg);
                 break;
 
             case 'l':
@@ -148,7 +167,7 @@ int main(int argc, char *argv[])
 
 //  OPEN AND PROCESS DIRECTORIES
     for(int i = optind; i < argc; i++)
-        scan_directory(argv[i], a_flag);
+        scan_directory(argv[i], a_flag, f_flag);
 
 //  IDENTIFY DUPLICATES
     int nfiles_unique = 0;
@@ -166,7 +185,8 @@ int main(int argc, char *argv[])
             // to keep track of the number of duplicates file i has
             int this_files_duplicate_count = 0;
 
-            // NOTE: is this an okay size?
+            // NOTE: is this an okay size? 
+            // Probably?
             char buffer[4096];
             sprintf(buffer, "%s\t", hashtable[i]->file.name);
 
@@ -181,7 +201,6 @@ int main(int argc, char *argv[])
 
                 next = next->next;
             }
-
 // HANDLE -l
             // TODO: add '\0' somehow to buffer...
             if(l_flag && this_files_duplicate_count >= 1)
@@ -193,6 +212,85 @@ int main(int argc, char *argv[])
             total_size += total_size_unique;
             nfiles_duplicate += this_files_duplicate_count;
         }
+    }
+
+// HANDLE -f
+    if(f_flag)
+    {
+        int has_duplicates = false;
+        //printf("f works. You typed: %s.\n", f_filename);
+        //printf("%s", checked_hash);
+        if(checked_hash != NULL)
+        {
+            if(hashtable_find(hashtable, checked_hash)) 
+            { 
+                for(int i = 0; i < HASHTABLE_SIZE; i++)
+                {
+                    if(hashtable[i] != NULL && strcmp(checked_hash, hashtable[i]->file.hash) == 0)
+                    {
+                        if(strcmp(f_filename, hashtable[i]->file.name) != 0)
+                        {
+                            has_duplicates = true;
+                            printf("%s\n", hashtable[i]->file.name);
+                        }
+
+                        LIST *next = hashtable[i]->next;
+                        while(next != NULL)
+                        {
+                            if(strcmp(f_filename, next->file.name) != 0)
+                            {
+                                has_duplicates = true;
+                                printf("%s\n", next->file.name);
+                            }
+                            next = next->next;
+                        }
+                        break;
+                    }
+                }
+            }   
+        }
+        if(!has_duplicates)
+        {
+            printf("Exit failure. (GET RID OF THIS LATER)\n");
+            exit(EXIT_FAILURE);
+        }
+        printf("Exit success. (GET RID OF THIS LATER) \n");
+        exit(EXIT_SUCCESS);
+    }
+
+// HANDLE -h
+    if(h_flag)
+    {
+        bool found_hash = false;
+        if(hashtable_find(hashtable, checked_hash))
+        {
+            for(int i = 0; i < HASHTABLE_SIZE; i++)
+            {
+                if(hashtable[i] != NULL)
+                {
+                   if(strcmp(checked_hash, hashtable[i]->file.hash) == 0)
+                   {
+                       found_hash = true;
+                       printf("%s\n", hashtable[i]->file.name);
+                       LIST *next = hashtable[i]->next;
+                       while(next != NULL)
+                       {
+                           printf("%s\n", next->file.name);
+                           next = next->next;
+                       }
+                       break;
+                   }
+                }
+            }
+        }
+
+        if(!found_hash)
+        {
+            printf("Exit fail. (GET RID OF THIS LATER) \n");
+            exit(EXIT_FAILURE);
+        }
+        printf("Exit success. (GET RID OF THIS LATER) \n");
+        exit(EXIT_SUCCESS);
     }
 
 // HANDLE -q
