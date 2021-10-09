@@ -1,14 +1,19 @@
 #include <stdint.h>
 #include "duplicates.h"
 
-bool list_find(LIST *list, char *str)
+bool list_find(LIST *list, char *str, bool isHash)
 {
-    while(list != NULL) {
-    if(strcmp(list->file.name, str) == 0)
+    while(list != NULL) 
     {
-        return true;
-    }
-    list = list->next;
+        if(isHash)
+        {
+            if(strcmp(list->file.hash, str) == 0) return true;
+        }
+        else
+        {
+            if(strcmp(list->file.name, str) == 0) return true;
+        }
+        list = list->next;
     }
     return false;
 }
@@ -26,7 +31,7 @@ LIST *list_new_item(D_FILE file)
 
 LIST *list_add(LIST *list, D_FILE new_file)
 {
-    if(list_find(list, new_file.hash))
+    if(list_find(list, new_file.name, false))
     {
         return list;
     }
@@ -73,6 +78,5 @@ bool hashtable_find(HASHTABLE *hashtable, char *str)
 {
     uint32_t h	= hash_string(str) % HASHTABLE_SIZE;
 
-    return list_find(hashtable[h], str);
+    return list_find(hashtable[h], str, true);
 }
-
