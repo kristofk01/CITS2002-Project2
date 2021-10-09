@@ -268,18 +268,18 @@ int main(int argc, char *argv[])
             {
                 if(hashtable[i] != NULL)
                 {
-                   if(strcmp(checked_hash, hashtable[i]->file.hash) == 0)
-                   {
-                       found_hash = true;
-                       printf("%s\n", hashtable[i]->file.name);
-                       LIST *next = hashtable[i]->next;
-                       while(next != NULL)
-                       {
-                           printf("%s\n", next->file.name);
-                           next = next->next;
-                       }
-                       break;
-                   }
+                    if(strcmp(checked_hash, hashtable[i]->file.hash) == 0)
+                    {
+                        found_hash = true;
+                        printf("%s\n", hashtable[i]->file.name);
+                        LIST *next = hashtable[i]->next;
+                        while(next != NULL)
+                        {
+                            printf("%s\n", next->file.name);
+                            next = next->next;
+                        }
+                        break;
+                    }
                 }
             }
         }
