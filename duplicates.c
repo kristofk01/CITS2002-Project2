@@ -20,33 +20,6 @@ extern char *strSHA2(char *filename);
 
 HASHTABLE *hashtable;
 
-// A duplicate file is defined as having a parent who is not itself.
-// In other words, unique files are the parents of themselves.
-/*
-void identify_duplicates(void)
-{
-    int j = 0;
-    while(j < nfiles)
-    {
-        if(files[j].parent == NULL) // if we have not yet considered file j, then...
-        {
-            // grab its hash and find any files with equivalent hash
-            char *target_hash = files[j].hash;
-            for(int i = 0; i < nfiles; ++i)
-            {
-                // if the file has the same hash and is an orphan (not yet considered)
-                if(strcmp(target_hash, files[i].hash) == 0 && files[i].parent == NULL)
-                {
-                    // set its parent
-                    files[i].parent = &files[j];
-                }
-            }
-        }
-        ++j;
-    }
-}
-*/
-
 void scan_directory(char *dirname, bool a_flag)
 {
     DIR *dir = opendir(dirname);
@@ -104,21 +77,6 @@ void scan_directory(char *dirname, bool a_flag)
     closedir(dir);
 }
 
-/*
-void compute_statistics(int *nfiles_unique, int *total_size_unique, int *total_size)
-{
-    for (int i = 0; i < nfiles; i++)
-    {
-        if (strcmp(files[i].name, files[i].parent->name) == 0)
-        {
-            *nfiles_unique += 1;
-            *total_size_unique += files[i].size;
-        }
-        *total_size += files[i].size;
-    }
-}
-*/
-
 void usage(char *program_name)
 {
     // TODO: remove m flag if we don't actually end up implementing it
@@ -139,8 +97,8 @@ int main(int argc, char *argv[])
 
     // these booleans are getting ridiculous, figure out another way
     bool a_flag = false; // for -a
-    //bool q_flag = false;
-    //bool l_flag = false;
+    bool q_flag = false;
+    bool l_flag = false;
     
     char *fname = NULL;
     char *hash_str = NULL;
@@ -154,7 +112,7 @@ int main(int argc, char *argv[])
                 break;
 
             case 'A':
-                printf("A works.\n");
+                exit(EXIT_FAILURE); // TODO: change
                 break;
 
             case 'f':
@@ -167,11 +125,11 @@ int main(int argc, char *argv[])
                 break;
 
             case 'l':
-                //l_flag = true;
+                l_flag = true;
                 break;
 
             case 'q':
-                //q_flag = true;
+                q_flag = true;
                 break;
 
             default:
@@ -180,7 +138,11 @@ int main(int argc, char *argv[])
         }
     }
 
-    if(argc <= 1) usage(program_name);
+    if(argc <= 1)
+    {
+        usage(program_name);
+        exit(EXIT_FAILURE); // or success? 
+    }
 
     hashtable = hashtable_new();
 
@@ -189,90 +151,54 @@ int main(int argc, char *argv[])
         scan_directory(argv[i], a_flag);
 
 //  IDENTIFY DUPLICATES
-
-
-/*
-//#define _DEBUG_PROJECT_
-#ifdef _DEBUG_PROJECT_
-    printf("No.\t\tSize\tFilename\t\tHash\n");
-    for(int i = 0; i < nfiles; ++i) {
-        printf("File %i: \t%i\t%s\t%s\t%p\n",
-            i, files[i].size, files[i].name, files[i].hash, (void *)files[i].parent);
-    }
-#endif
-
-    identify_duplicates();
-
-#ifdef _DEBUG_PROJECT_
-    printf("\nParent\t\t\t\tFilename\n");
-    for(int i = 0; i < nfiles; ++i) {
-        D_FILE *parent = files[i].parent;
-        //printf("%p\n", (void *)parent);
-        if(parent != NULL)
-            printf("%s \t\t%s\n", parent->name, files[i].name);
-    }
-    printf("\n");
-#endif
-
     int nfiles_unique = 0;
+    int nfiles_duplicate = 0;
     int total_size_unique = 0;
     int total_size = 0;
-    compute_statistics(&nfiles_unique, &total_size_unique, &total_size);
+
+    // is looping through the entire hashtable the best solution???
+    //NOTE: there is a bug where total_size is counted incorrectly!
+
+    for(int i = 0; i < HASHTABLE_SIZE; ++i)
+    {
+        if(hashtable[i] != NULL)
+        {
+            // to keep track of the number of duplicates file i has
+            int this_files_duplicate_count = 0;
+
+            // NOTE: is this an okay size?
+            char buffer[4096];
+            sprintf(buffer, "%s\t", hashtable[i]->file.name);
+
+            // look through for other files that, if exist, are then unique
+            LIST *next = hashtable[i]->next;
+            while(next != NULL)
+            {
+                strcat(strcat(buffer, next->file.name), "\t");
+
+                total_size += next->file.size;
+                ++this_files_duplicate_count;
+
+                next = next->next;
+            }
 
 // HANDLE -l
-    if(l_flag)
-    {
-        bool seen[nfiles];
-        int j = 0;
-
-        while(j < nfiles)
-        {
-            char buffer[MAXPATHLEN];
-            char big_buffer[MAXPATHLEN * nfiles];
-            int count = 0;
-            // if we are looking at something that is a parent of itself
-            if (strcmp(files[j].name, files[j].parent->name) == 0)
-            {
-                sprintf(buffer, "%s\t", files[j].name);
-                //printf("\t%s\n", buffer);
-                //seen[j] = true;
-                ++j;
-                continue;
-            }
-
-            for(int i = 0; i < nfiles; ++i)
-            {
-                // if we have not checked this file and it has a parent other than itself
-                // then we know its a duplicate of the jth file...
-                if(!seen[i] && strcmp(files[j].name, files[i].parent->name) != 0)
-                {
-                    strcat(big_buffer, files[i].name);
-                    strcat(big_buffer, "\t");
-                    //printf("%s\n", big_buffer);
-                    seen[i] = true;
-                    ++count;
-                }
-            }
+            // TODO: add '\0' somehow to buffer...
+            if(l_flag && this_files_duplicate_count >= 1)
+                printf("%s\n", buffer);
             
-            if(count > 1)
-            {
-                char *result = malloc((MAXPATHLEN * nfiles) * sizeof(char *));
-                CHECK_ALLOC(result);
-
-                strcat(result, buffer);
-                strcat(result, big_buffer);
-                printf("%s\n", result);
-
-                free(result);
-            }
-            ++j;
+// UPDATE STATISTICS
+            ++nfiles_unique;
+            total_size_unique += hashtable[i]->file.size;
+            total_size += total_size_unique;
+            nfiles_duplicate += this_files_duplicate_count;
         }
     }
 
 // HANDLE -q
     if(q_flag)
     {
-        if(nfiles == nfiles_unique)
+        if(nfiles_duplicate == 0)
         {
             printf("EXIT_SUCCESS (remember to remove this later).\n");
             exit(EXIT_SUCCESS);
@@ -286,13 +212,13 @@ int main(int argc, char *argv[])
     else if(!q_flag && !l_flag) // report statistics
     {
         // TODO: remove left printf column
-        printf("Total files:\t");           printf("%u\n", nfiles);
-        printf("Total size:\t");            printf("%u\n", total_size);
+        printf("Total files:\t\t");         printf("%u\n", nfiles_unique + nfiles_duplicate);
+        printf("Total size:\t\t");          printf("%u\n", total_size);
         printf("Total unique files:\t");    printf("%u\n", nfiles_unique);
         printf("Total min. size:\t");       printf("%u\n", total_size_unique);
     }
-    free(files);
-    */
+   
+    free(hashtable);
 
     exit(EXIT_SUCCESS);
 }

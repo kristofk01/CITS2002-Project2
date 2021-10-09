@@ -24,7 +24,7 @@ typedef struct _list
     struct _list    *next;
 } LIST;
 extern LIST *list_add(LIST *list, D_FILE new_file);
-extern D_FILE *list_find (LIST *list, char *str);
+extern bool list_find (LIST *list, char *str);
 
 typedef LIST *HASHTABLE;
 extern HASHTABLE *hashtable_new(void);

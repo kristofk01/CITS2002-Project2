@@ -1,17 +1,16 @@
 #include <stdint.h>
 #include "duplicates.h"
 
-D_FILE *list_find(LIST *list, char *str)
+bool list_find(LIST *list, char *str)
 {
     while(list != NULL) {
-    if(strcmp(list->file.hash, str) == 0 ||
-        (strcmp(list->file.name, str) == 0))
+    if(strcmp(list->file.name, str) == 0)
     {
-        return &list->file;
+        return true;
     }
     list = list->next;
     }
-    return NULL;
+    return false;
 }
 
 LIST *list_new_item(D_FILE file)
@@ -58,8 +57,8 @@ uint32_t hash_string(char *string)
 HASHTABLE *hashtable_new(void)
 {
     HASHTABLE   *new = malloc(HASHTABLE_SIZE * sizeof(LIST *));
-
     CHECK_ALLOC(new);
+    
     return new;
 }
 
