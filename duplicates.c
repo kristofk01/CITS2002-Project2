@@ -198,6 +198,7 @@ int main(int argc, char *argv[])
 // HANDLE -f AND -h
     if(fh_flag)
     {
+        int count = 0;
         uint32_t h = hash_string(arg_str) % HASHTABLE_SIZE;
 
         // NOTE: is this an okay size?
@@ -209,8 +210,20 @@ int main(int argc, char *argv[])
         {
             strcat(strcat(buffer, current->file.name), "\n");
             current = current->next;
+            ++count;
         }
         printf("%s", buffer);
+
+        if(count > 0)
+        {
+            printf("EXIT_SUCCESS (remember to remove this later).\n");
+            exit(EXIT_SUCCESS);
+        }
+        else
+        {
+            printf("EXIT_FAILURE (remember to remove this later).\n");
+            exit(EXIT_FAILURE);
+        }
     }
 
 // HANDLE -q
