@@ -1,4 +1,3 @@
-#include <stdint.h>
 #include "duplicates.h"
 
 bool list_find(LIST *list, char *str)

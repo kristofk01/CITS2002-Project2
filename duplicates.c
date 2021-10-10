@@ -97,11 +97,11 @@ int main(int argc, char *argv[])
 
     // these booleans are getting ridiculous, figure out another way
     bool a_flag = false; // for -a
+    bool fh_flag = false;
     bool q_flag = false;
     bool l_flag = false;
     
-    char *fname = NULL;
-    char *hash_str = NULL;
+    char *arg_str = NULL;
 
     while((opt = getopt(argc, argv, OPTLIST)) != -1) 
     {
@@ -116,12 +116,13 @@ int main(int argc, char *argv[])
                 break;
 
             case 'f':
-                fname = strdup(optarg);
-                printf("f works. You typed: %s.\n", fname);
+                arg_str = strSHA2(strdup(optarg));
+                fh_flag = true;
                 break;
+
             case 'h':
-                hash_str = strdup(optarg);
-                printf("h works. You typed: %s.\nNOTE: h CANNOT HANDLE HASH YET AND IS SUBSTITUTED WITH STRING.\n", hash_str);
+                arg_str = strdup(optarg);
+                fh_flag = true;
                 break;
 
             case 'l':
@@ -141,24 +142,23 @@ int main(int argc, char *argv[])
     if(argc <= 1)
     {
         usage(program_name);
-        exit(EXIT_FAILURE); // or success? 
+        exit(EXIT_FAILURE); // or success? TODO: double check which one
     }
 
     hashtable = hashtable_new();
 
-//  OPEN AND PROCESS DIRECTORIES
+// OPEN AND PROCESS DIRECTORIES
     for(int i = optind; i < argc; i++)
         scan_directory(argv[i], a_flag);
 
-//  IDENTIFY DUPLICATES
     int nfiles_unique = 0;
     int nfiles_duplicate = 0;
     int total_size_unique = 0;
     int total_size = 0;
 
+// IDENTIFY DUPLICATES
     // is looping through the entire hashtable the best solution???
     //NOTE: there is a bug where total_size is counted incorrectly!
-
     for(int i = 0; i < HASHTABLE_SIZE; ++i)
     {
         if(hashtable[i] != NULL)
@@ -171,15 +171,15 @@ int main(int argc, char *argv[])
             sprintf(buffer, "%s\t", hashtable[i]->file.name);
 
             // look through for other files that, if exist, are then unique
-            LIST *next = hashtable[i]->next;
-            while(next != NULL)
+            LIST *current = hashtable[i]->next;
+            while(current != NULL)
             {
-                strcat(strcat(buffer, next->file.name), "\t");
+                strcat(strcat(buffer, current->file.name), "\t");
 
-                total_size += next->file.size;
+                total_size += current->file.size;
                 ++this_files_duplicate_count;
 
-                next = next->next;
+                current = current->next;
             }
 
 // HANDLE -l
@@ -193,6 +193,24 @@ int main(int argc, char *argv[])
             total_size += total_size_unique;
             nfiles_duplicate += this_files_duplicate_count;
         }
+    }
+
+// HANDLE -f AND -h
+    if(fh_flag)
+    {
+        uint32_t h = hash_string(arg_str) % HASHTABLE_SIZE;
+
+        // NOTE: is this an okay size?
+        char buffer[4096];
+        sprintf(buffer, "%s\n", hashtable[h]->file.name);
+
+        LIST *current = hashtable[h]->next;
+        while(current != NULL)
+        {
+            strcat(strcat(buffer, current->file.name), "\n");
+            current = current->next;
+        }
+        printf("%s", buffer);
     }
 
 // HANDLE -q
@@ -209,7 +227,7 @@ int main(int argc, char *argv[])
             exit(EXIT_FAILURE);
         }
     }
-    else if(!q_flag && !l_flag) // report statistics
+    else if(!q_flag && !l_flag && !fh_flag) // report statistics
     {
         // TODO: remove left printf column
         printf("Total files:\t\t");         printf("%u\n", nfiles_unique + nfiles_duplicate);

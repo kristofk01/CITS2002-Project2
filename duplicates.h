@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdint.h>
 #include <string.h>
 #include <stdbool.h>
 
@@ -30,3 +31,4 @@ typedef LIST *HASHTABLE;
 extern HASHTABLE *hashtable_new(void);
 extern void hashtable_add(HASHTABLE *, D_FILE new_file);
 extern bool hashtable_find(HASHTABLE *, char *str);
+extern uint32_t hash_string(char *string);
