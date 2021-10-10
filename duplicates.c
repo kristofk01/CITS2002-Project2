@@ -217,7 +217,7 @@ int main(int argc, char *argv[])
 // HANDLE -f
     if(f_flag)
     {
-        int has_duplicates = false;
+        int duplicates = 0;
         //printf("f works. You typed: %s.\n", f_filename);
         //printf("%s", checked_hash);
         if(checked_hash != NULL)
@@ -230,7 +230,7 @@ int main(int argc, char *argv[])
                     {
                         if(strcmp(f_filename, hashtable[i]->file.name) != 0)
                         {
-                            has_duplicates = true;
+                            duplicates++;
                             printf("%s\n", hashtable[i]->file.name);
                         }
 
@@ -239,7 +239,7 @@ int main(int argc, char *argv[])
                         {
                             if(strcmp(f_filename, next->file.name) != 0)
                             {
-                                has_duplicates = true;
+                                duplicates++;
                                 printf("%s\n", next->file.name);
                             }
                             next = next->next;
@@ -249,7 +249,7 @@ int main(int argc, char *argv[])
                 }
             }   
         }
-        if(!has_duplicates)
+        if(duplicates == 0)
         {
             printf("Exit failure. (GET RID OF THIS LATER)\n");
             exit(EXIT_FAILURE);
