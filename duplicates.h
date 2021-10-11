@@ -10,6 +10,8 @@
 
 #define CHECK_ALLOC(p) if(p == NULL) { perror(__func__); exit(EXIT_FAILURE); }
 
+//  --------------------------------------------------------------------
+
 #define HASHTABLE_SIZE 997
 
 typedef struct
@@ -32,3 +34,8 @@ extern HASHTABLE *hashtable_new(void);
 extern void hashtable_add(HASHTABLE *, D_FILE new_file);
 extern bool hashtable_find(HASHTABLE *, char *str);
 extern uint32_t hash_string(char *string);
+
+//  --------------------------------------------------------------------
+
+extern char *strSHA2(char *filename);
+extern void scan_directory(HASHTABLE *hashtable, char *dirname, bool a_flag);

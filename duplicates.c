@@ -2,79 +2,10 @@
 //  Name(s):             Kristof Kovacs , Daniel Ling
 //  Student number(s):   22869854       , 22896002
 
-// TODO: at the end, figure out what header files are needed for most .c files
-// and move them to duplicates.h
-
-#include <unistd.h>
 #include <getopt.h>
-#include <dirent.h>
-
-#include <sys/param.h>
-#include <sys/stat.h>
-
 #include "duplicates.h"
 
 #define OPTLIST "aAmf:h:lq"
-
-extern char *strSHA2(char *filename);
-
-// TODO: move this into main? and pass it as a reference to functions!
-HASHTABLE *hashtable;
-
-void scan_directory(char *dirname, bool a_flag)
-{
-    DIR *dir = opendir(dirname);
-    struct dirent *entry = NULL;
-
-    if(dir == NULL)
-    {
-        perror(dirname);
-        exit(EXIT_FAILURE);
-    }
-
-    while((entry = readdir(dir)) != NULL)
-    {
-        // ignore . and .. entries
-        if(!strcmp(entry->d_name, ".") || !strcmp(entry->d_name, ".."))
-            continue;
-        
-        char pathname[MAXPATHLEN];
-        sprintf(pathname, "%s/%s", dirname, entry->d_name);
-        
-        struct stat statinfo;
-        if(stat(pathname, &statinfo) != 0)
-        {
-            perror(pathname);
-            exit(EXIT_FAILURE);
-        }
-
-        // if the current entry is a file, add it to the hashtable
-        if(S_ISREG(statinfo.st_mode))
-        {
-            D_FILE file;
-            file.hash = strSHA2(pathname);
-            file.name = strdup(pathname);
-            file.size = statinfo.st_size;
-
-            // handle -a
-            if(a_flag)
-            {
-                hashtable_add(hashtable, file);
-            }
-            else if(!a_flag && strncmp(entry->d_name, ".", 1))
-            {
-                hashtable_add(hashtable, file);
-            }
-        }
-        else if(S_ISDIR(statinfo.st_mode))
-        {
-            // the current entry is a directory so traverse it
-            scan_directory(pathname, a_flag);
-        }
-    }
-
-    closedir(dir);
-}
 
 void usage(char *program_name)
 {
@@ -144,12 +75,13 @@ int main(int argc, char *argv[])
         exit(EXIT_FAILURE);
     }
 
-    hashtable = hashtable_new();
+    HASHTABLE *hashtable = hashtable_new();
 
 // OPEN AND PROCESS DIRECTORIES
     for(int i = optind; i < argc; i++)
-        scan_directory(argv[i], a_flag);
+        scan_directory(hashtable, argv[i], a_flag);
 
+    // statistics
     int nfiles_unique = 0;
     int nfiles_duplicate = 0;
     int total_size_unique = 0;
@@ -168,7 +100,7 @@ int main(int argc, char *argv[])
             char buffer[4096];
             sprintf(buffer, "%s\t", hashtable[i]->file.name);
 
-            // look through for other files that, if exist, are then unique
+            // look through for other files that, if exist, are then duplicates of i
             LIST *current = hashtable[i]->next;
             while(current != NULL)
             {
@@ -188,7 +120,6 @@ int main(int argc, char *argv[])
                 printf("%s\n", buffer);
             }
             
-// UPDATE STATISTICS
             ++nfiles_unique;
             total_size_unique += hashtable[i]->file.size;
             nfiles_duplicate += this_files_duplicate_count;
@@ -211,6 +142,7 @@ int main(int argc, char *argv[])
         char buffer[4096];
         sprintf(buffer, "%s\n", hashtable[h]->file.name);
 
+        // traverse any duplicates the file may have
         LIST *current = hashtable[h]->next;
         while(current != NULL)
         {
@@ -257,8 +189,6 @@ int main(int argc, char *argv[])
         printf("Total unique files:\t");    printf("%u\n", nfiles_unique);
         printf("Total min. size:\t");       printf("%u\n", total_size_unique);
     }
-   
-    free(hashtable);
 
     exit(EXIT_SUCCESS);
 }

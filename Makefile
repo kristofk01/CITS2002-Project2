@@ -1,6 +1,6 @@
 PROJECT	= duplicates
 HEADERS	= $(PROJECT).h
-OBJ 	= duplicates.o store.o strSHA2.o
+OBJ 	= driver.o store.o duplicates.o strSHA2.o
 
 C11 	= cc -std=c11
 FLAGS	= -Wall -Werror -pedantic
