@@ -67,6 +67,7 @@ void hashtable_add(HASHTABLE *hashtable, D_FILE file)
     hashtable[h] = list_add(hashtable[h], file);
 }
 
+/* TODO: delete - unused...
 // str == file.hash
 bool hashtable_find(HASHTABLE *hashtable, char *str)
 {
@@ -74,4 +75,4 @@ bool hashtable_find(HASHTABLE *hashtable, char *str)
 
     return list_find(hashtable[h], str);
 }
-
+*/

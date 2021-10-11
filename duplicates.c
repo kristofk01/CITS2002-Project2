@@ -18,6 +18,7 @@
 
 extern char *strSHA2(char *filename);
 
+// TODO: move this into main? and pass it as a reference to functions!
 HASHTABLE *hashtable;
 
 void scan_directory(char *dirname, bool a_flag)
@@ -27,8 +28,6 @@ void scan_directory(char *dirname, bool a_flag)
 
     if(dir == NULL)
     {
-        // TODO: check if this is how they actually want us to handle errors
-        // in the project spec...
         perror(dirname);
         exit(EXIT_FAILURE);
     }
@@ -95,7 +94,7 @@ int main(int argc, char *argv[])
     char *program_name = argv[0];
     int opt;
 
-    // these booleans are getting ridiculous, figure out another way
+    // NOTE: these booleans are getting ridiculous, figure out another way
     bool a_flag = false; // for -a
     bool fh_flag = false;
     bool q_flag = false;
@@ -142,7 +141,7 @@ int main(int argc, char *argv[])
     if(argc <= 1)
     {
         usage(program_name);
-        exit(EXIT_FAILURE); // or success? TODO: double check which one
+        exit(EXIT_FAILURE);
     }
 
     hashtable = hashtable_new();
@@ -154,11 +153,10 @@ int main(int argc, char *argv[])
     int nfiles_unique = 0;
     int nfiles_duplicate = 0;
     int total_size_unique = 0;
-    int total_size = 0;
+    int total_size_duplicate = 0;
 
 // IDENTIFY DUPLICATES
     // is looping through the entire hashtable the best solution???
-    //NOTE: there is a bug where total_size is counted incorrectly!
     for(int i = 0; i < HASHTABLE_SIZE; ++i)
     {
         if(hashtable[i] != NULL)
@@ -176,21 +174,23 @@ int main(int argc, char *argv[])
             {
                 strcat(strcat(buffer, current->file.name), "\t");
 
-                total_size += current->file.size;
+                total_size_duplicate += current->file.size;
                 ++this_files_duplicate_count;
 
                 current = current->next;
             }
 
 // HANDLE -l
-            // TODO: add '\0' somehow to buffer...
             if(l_flag && this_files_duplicate_count >= 1)
+            {
+                int len = strlen(buffer);
+                buffer[len] = '\0';
                 printf("%s\n", buffer);
+            }
             
 // UPDATE STATISTICS
             ++nfiles_unique;
             total_size_unique += hashtable[i]->file.size;
-            total_size += total_size_unique;
             nfiles_duplicate += this_files_duplicate_count;
         }
     }
@@ -198,6 +198,12 @@ int main(int argc, char *argv[])
 // HANDLE -f AND -h
     if(fh_flag)
     {
+        if(arg_str == NULL)
+        {
+            printf("EXIT_FAILURE (remember to remove this later).\n");
+            exit(EXIT_FAILURE);
+        }
+
         int count = 0;
         uint32_t h = hash_string(arg_str) % HASHTABLE_SIZE;
 
@@ -212,6 +218,9 @@ int main(int argc, char *argv[])
             current = current->next;
             ++count;
         }
+
+        int len = strlen(buffer);
+        buffer[len] = '\0';
         printf("%s", buffer);
 
         if(count > 0)
@@ -244,7 +253,7 @@ int main(int argc, char *argv[])
     {
         // TODO: remove left printf column
         printf("Total files:\t\t");         printf("%u\n", nfiles_unique + nfiles_duplicate);
-        printf("Total size:\t\t");          printf("%u\n", total_size);
+        printf("Total size:\t\t");          printf("%u\n", total_size_unique + total_size_duplicate);
         printf("Total unique files:\t");    printf("%u\n", nfiles_unique);
         printf("Total min. size:\t");       printf("%u\n", total_size_unique);
     }
