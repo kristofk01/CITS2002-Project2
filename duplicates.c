@@ -118,7 +118,7 @@ int main(int argc, char *argv[])
     bool a_flag = false; // for -a
     bool q_flag = false;
     bool f_flag = false;
-    bool h_flag = false;
+    bool fh_flag = false;
     bool l_flag = false;
 
     while((opt = getopt(argc, argv, OPTLIST)) != -1) 
@@ -134,12 +134,13 @@ int main(int argc, char *argv[])
                 break;
 
             case 'f':
+                fh_flag = true;
                 f_flag = true;
                 f_filename = strdup(optarg);
                 break;
 
             case 'h':
-                h_flag = true;
+                fh_flag = true;
                 checked_hash = strdup(optarg);
                 break;
 
@@ -214,77 +215,48 @@ int main(int argc, char *argv[])
         }
     }
 
-// HANDLE -f
-    if(f_flag)
+// HANDLE -f and -h with the same infrastructure
+    if(fh_flag)
     {
-        int duplicates = 0;
-        //printf("f works. You typed: %s.\n", f_filename);
-        //printf("%s", checked_hash);
+        int count = 0;
         if(checked_hash != NULL)
-        {
-            if(hashtable_find(hashtable, checked_hash)) 
-            { 
-                for(int i = 0; i < HASHTABLE_SIZE; i++)
-                {
-                    if(hashtable[i] != NULL && strcmp(checked_hash, hashtable[i]->file.hash) == 0)
-                    {
-                        if(strcmp(f_filename, hashtable[i]->file.name) != 0)
-                        {
-                            duplicates++;
-                            printf("%s\n", hashtable[i]->file.name);
-                        }
-
-                        LIST *next = hashtable[i]->next;
-                        while(next != NULL)
-                        {
-                            if(strcmp(f_filename, next->file.name) != 0)
-                            {
-                                duplicates++;
-                                printf("%s\n", next->file.name);
-                            }
-                            next = next->next;
-                        }
-                        break;
-                    }
-                }
-            }   
-        }
-        if(duplicates == 0)
-        {
-            printf("Exit failure. (GET RID OF THIS LATER)\n");
-            exit(EXIT_FAILURE);
-        }
-        printf("Exit success. (GET RID OF THIS LATER) \n");
-        exit(EXIT_SUCCESS);
-    }
-
-// HANDLE -h
-    if(h_flag)
-    {
-        bool found_hash = false;
-        if(hashtable_find(hashtable, checked_hash))
         {
             for(int i = 0; i < HASHTABLE_SIZE; i++)
             {
-                if(hashtable[i] != NULL)
-                {
-                    if(strcmp(checked_hash, hashtable[i]->file.hash) == 0)
+                if(hashtable[i] != NULL && strcmp(checked_hash, hashtable[i]->file.hash) == 0)
+                {  
+                    if(f_flag && strcmp(hashtable[i]->file.name, f_filename) != 0)
                     {
-                        found_hash = true;
                         printf("%s\n", hashtable[i]->file.name);
-                        LIST *next = hashtable[i]->next;
-                        while(next != NULL)
-                        {
-                            printf("%s\n", next->file.name);
-                            next = next->next;
-                        }
-                        break;
+                        count++;
                     }
+                    else if (!f_flag)
+                    {
+                        printf("%s\n", hashtable[i]->file.name);
+                        count++;
+                    }
+
+                    LIST *current = hashtable[i]->next;
+                    while(current != NULL)
+                    {
+                        if(f_flag && strcmp(current->file.name, f_filename) != 0)
+                        {
+                            printf("%s\n", current->file.name);
+                            count++;
+                        }
+                        else if(!f_flag)
+                        {
+                            printf("%s\n", current->file.name);
+                            count++;
+                        }
+                        current = current->next;
+                    }
+                    break;
                 }
             }
         }
 
-        if(!found_hash)
+        if(count == 0)
         {
             printf("Exit fail. (GET RID OF THIS LATER) \n");
             exit(EXIT_FAILURE);
