@@ -210,7 +210,6 @@ int main(int argc, char *argv[])
 // UPDATE STATISTICS
             ++nfiles_unique;
             total_size_unique += hashtable[i]->file.size;
-            total_size += total_size_unique;
             nfiles_duplicate += this_files_duplicate_count;
         }
     }
@@ -283,7 +282,7 @@ int main(int argc, char *argv[])
     {
         // TODO: remove left printf column
         printf("Total files:\t\t");         printf("%u\n", nfiles_unique + nfiles_duplicate);
-        printf("Total size:\t\t");          printf("%u\n", total_size);
+        printf("Total size:\t\t");          printf("%u\n", total_size + total_size_unique);
         printf("Total unique files:\t");    printf("%u\n", nfiles_unique);
         printf("Total min. size:\t");       printf("%u\n", total_size_unique);
     }
