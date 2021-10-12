@@ -23,7 +23,7 @@ HASHTABLE *hashtable;
 //Used to store the filename in -f.
 char *f_filename;
 
-//Used to store the hashname in -f and -h.
+//Used to store the hash in -f and -h.
 char *checked_hash;
 
 void scan_directory(char *dirname, bool a_flag, bool f_flag)
@@ -254,7 +254,9 @@ int main(int argc, char *argv[])
                 }
             }
         }
-
+        
+        free(hashtable);
+        
         if(count == 0)
         {
             printf("Exit fail. (GET RID OF THIS LATER) \n");
@@ -263,7 +265,9 @@ int main(int argc, char *argv[])
         printf("Exit success. (GET RID OF THIS LATER) \n");
         exit(EXIT_SUCCESS);
     }
-
+    
+    free(hashtable);
+    
 // HANDLE -q
     if(q_flag)
     {
@@ -286,8 +290,5 @@ int main(int argc, char *argv[])
         printf("Total unique files:\t");    printf("%u\n", nfiles_unique);
         printf("Total min. size:\t");       printf("%u\n", total_size_unique);
     }
-   
-    free(hashtable);
-
     exit(EXIT_SUCCESS);
 }
