@@ -2,12 +2,13 @@
 
 bool list_find(LIST *list, char *str)
 {
-    while(list != NULL) {
-    if(strcmp(list->file.name, str) == 0)
+    while(list != NULL)
     {
-        return true;
-    }
-    list = list->next;
+        if(strcmp(list->file.name, str) == 0)
+        {
+            return true;
+        }
+        list = list->next;
     }
     return false;
 }
@@ -46,7 +47,8 @@ uint32_t hash_string(char *string)
 {
     uint32_t hash = 0;
 
-    while(*string != '\0') {
+    while(*string != '\0')
+    {
         hash = hash*33 + *string;
         ++string;
     }

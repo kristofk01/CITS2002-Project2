@@ -4,6 +4,8 @@
 #include <string.h>
 #include <stdbool.h>
 
+#include <sys/stat.h>
+
 #if defined(__linux__)
     extern char *strdup(const char *string);
 #endif

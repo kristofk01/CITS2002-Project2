@@ -2,6 +2,7 @@
 //  Name(s):             Kristof Kovacs , Daniel Ling
 //  Student number(s):   22869854       , 22896002
 
+#include <unistd.h>
 #include <getopt.h>
 #include "duplicates.h"
 
@@ -88,11 +89,36 @@ int main(int argc, char *argv[])
     int total_size_duplicate = 0;
 
 // IDENTIFY DUPLICATES
+    int *unique_inodes = NULL;
+
     // is looping through the entire hashtable the best solution???
     for(int i = 0; i < HASHTABLE_SIZE; ++i)
     {
         if(hashtable[i] != NULL)
         {
+            // ADVANCED TASK 2... //
+            struct stat statinfo;
+            char *pathname = hashtable[i]->file.name;
+            if(stat(pathname, &statinfo) != 0)
+            {
+                perror(pathname);
+                exit(EXIT_FAILURE);
+            }
+
+            int size = nfiles_unique + nfiles_duplicate + 1;
+            unique_inodes = realloc(unique_inodes, sizeof(int) * size);
+            CHECK_ALLOC(unique_inodes);
+
+            int current_ino = statinfo.st_ino;
+
+            for(int i = 0; i < size; ++i)
+                if(unique_inodes[i] == current_ino)
+                    continue;
+
+            unique_inodes[size-1] = current_ino;
+
+            /////////////////////////
+
             // to keep track of the number of duplicates file i has
             int this_files_duplicate_count = 0;
 
@@ -126,6 +152,8 @@ int main(int argc, char *argv[])
         }
     }
 
+    free(unique_inodes);
+
 // HANDLE -f AND -h
     if(fh_flag)
     {
@@ -155,6 +183,8 @@ int main(int argc, char *argv[])
         buffer[len] = '\0';
         printf("%s", buffer);
 
+        free(hashtable);
+
         if(count > 0)
         {
             printf("EXIT_SUCCESS (remember to remove this later).\n");
@@ -166,6 +196,8 @@ int main(int argc, char *argv[])
             exit(EXIT_FAILURE);
         }
     }
+
+    free(hashtable);
 
 // HANDLE -q
     if(q_flag)

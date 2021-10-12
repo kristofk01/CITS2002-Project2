@@ -1,6 +1,5 @@
 #include <dirent.h>
 #include <sys/param.h>
-#include <sys/stat.h>
 
 #include "duplicates.h"
 
