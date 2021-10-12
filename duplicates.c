@@ -176,8 +176,7 @@ int main(int argc, char *argv[])
     int total_size_unique = 0;
     int total_size = 0;
 
-    // is looping through the entire hashtable the best solution???
-    //NOTE: there is a bug where total_size is counted incorrectly!
+    // is looping through the entire hashtable the best solution??
 
     for(int i = 0; i < HASHTABLE_SIZE; ++i)
     {
