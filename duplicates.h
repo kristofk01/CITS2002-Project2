@@ -39,6 +39,6 @@ extern uint32_t hash_string(char *string);
 extern char *strSHA2(char *filename);
 
 extern int process_directory(char *dirname, bool a_flag);
-extern bool find_file(char *hash);
+extern bool find_file(bool f_flag, char *filename, char *hash);
 extern void list_duplicates();
 extern void report_statistics();
