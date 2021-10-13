@@ -5,15 +5,30 @@
 
 struct STATS
 {
+    int nfiles;
     int nfiles_unique;
-    int nfiles_duplicate;
+    int total_size;
     int total_size_unique;
-    int total_size_duplicate;
 };
 
 struct STATS statistics;
 
-HASHTABLE *hashtable;
+static HASHTABLE *hashtable;
+static int *keys;
+static int nkeys = 0;
+
+static void add_key(int *keys, int k)
+{
+    for(int i = 0; i < nkeys; ++i)
+        if(k == keys[i])
+            return;
+
+    keys = realloc(keys, sizeof(int) * (nkeys+1));
+    CHECK_ALLOC(keys);
+
+    keys[nkeys] = k;
+    ++nkeys;
+}
 
 static void scan_directory(HASHTABLE *hashtable, char *dirname, bool a_flag)
 {
@@ -53,11 +68,21 @@ static void scan_directory(HASHTABLE *hashtable, char *dirname, bool a_flag)
             // handle -a
             if(a_flag)
             {
-                statistics.nfiles_duplicate = hashtable_add(hashtable, file);
+                int k = hashtable_add(hashtable, file);
+
+                add_key(keys, k);
+
+                statistics.nfiles += 1;
+                statistics.total_size += file.size;
             }
             else if(!a_flag && strncmp(entry->d_name, ".", 1))
             {
-                statistics.nfiles_duplicate = hashtable_add(hashtable, file);
+                int k = hashtable_add(hashtable, file);
+                
+                add_key(keys, k);
+
+                statistics.nfiles += 1;
+                statistics.total_size += file.size;
             }
         }
         else if(S_ISDIR(statinfo.st_mode))
@@ -71,9 +96,8 @@ static void scan_directory(HASHTABLE *hashtable, char *dirname, bool a_flag)
     closedir(dir);
 }
 
-bool find_file(char *hash, char *filename)
+bool find_file(char *hash)
 {
-    int count = 0;
     LIST *result = hashtable_find(hashtable, hash);
 
     if(result == NULL)
@@ -84,11 +108,13 @@ bool find_file(char *hash, char *filename)
 
     // traverse any duplicates the file may have
     LIST *current = result->next;
+    if(current == NULL)
+        return false;
+
     while(current != NULL)
     {
         strcat(strcat(buffer, current->file.name), "\n");
         current = current->next;
-        ++count;
     }
 
     int len = strlen(buffer);
@@ -98,38 +124,59 @@ bool find_file(char *hash, char *filename)
     free(result);
     free(current);
 
-    if(count > 0)
-        return true;
+    return true;
+}
 
-    return false;
+void list_duplicates()
+{
+    for(int i = 0; i < nkeys; ++i)
+    {
+        int k = keys[i];
+
+        // to keep track of the number of duplicates file k has
+        int this_files_duplicate_count = 0;
+
+        char buffer[4096];
+        sprintf(buffer, "%s\t", hashtable[k]->file.name);
+
+        // look through for other files that, if exist, are then duplicates of k
+        LIST *current = hashtable[k]->next;
+        while(current != NULL)
+        {
+            strcat(strcat(buffer, current->file.name), "\t");
+
+            //total_size_duplicate += current->file.size;
+            ++this_files_duplicate_count;
+
+            current = current->next;
+        }
+
+        if(this_files_duplicate_count >= 1)
+        {
+            int len = strlen(buffer);
+            buffer[len] = '\0';
+            printf("%s\n", buffer);
+        }
+    }
 }
 
 int process_directory(char *dirname, bool a_flag)
 {
     hashtable = hashtable_new();
+    keys = malloc(sizeof(int));
 
     scan_directory(hashtable, dirname, a_flag);
 
-    printf("\tHashtable Entries (first only):\n");
-    for(int i = 0; i < HASHTABLE_SIZE; ++i)
-    {
-        if(hashtable[i] != NULL)
-            printf("\t\t%s\n", hashtable[i]->file.name);
-    }
-
     free(hashtable);
 
-    return statistics.nfiles_duplicate;
+    return (statistics.nfiles - statistics.nfiles_unique);
 }
 
 void report_statistics()
 {
-    printf("%i\n", statistics.nfiles_duplicate);
     // TODO: remove left printf column
-    /*
-    printf("Total files:\t\t");         printf("%u\n", nfiles_unique + nfiles_duplicate);
-    printf("Total size:\t\t");          printf("%u\n", total_size_unique + total_size_duplicate);
-    printf("Total unique files:\t");    printf("%u\n", nfiles_unique);
-    printf("Total min. size:\t");       printf("%u\n", total_size_unique);
-    */
+    printf("Total files:\t\t");         printf("%u\n", statistics.nfiles);
+    printf("Total size:\t\t");          printf("%u\n", statistics.total_size);
+    printf("Total unique files:\t");    printf("%u\n", statistics.nfiles_unique);
+    printf("Total min. size:\t");       printf("%u\n", statistics.total_size_unique);
 }

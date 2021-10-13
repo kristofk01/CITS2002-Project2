@@ -1,7 +1,5 @@
 #include "duplicates.h"
 
-static int nfiles_duplicate = 0;
-
 static LIST *list_find(LIST *list, char *str)
 {
     while(list != NULL)
@@ -28,17 +26,9 @@ static LIST *list_new_item(D_FILE file)
 
 static LIST *list_add(LIST *list, D_FILE new_file)
 {
-    if(list_find(list, new_file.hash))
-    {
-        return list;
-    }
-    else // add to head
-    {
-        ++nfiles_duplicate;
-        LIST *new   = list_new_item(new_file);
-        new->next   = list;
-        return new;
-    }
+    LIST *new   = list_new_item(new_file);
+    new->next   = list;
+    return new;
 }
 
 //  --------------------------------------------------------------------
@@ -71,7 +61,7 @@ int hashtable_add(HASHTABLE *hashtable, D_FILE file)
     uint32_t h   = hash_string(file.hash) % HASHTABLE_SIZE;
     hashtable[h] = list_add(hashtable[h], file);
 
-    return nfiles_duplicate;
+    return h;
 }
 
 LIST *hashtable_find(HASHTABLE *hashtable, char *str)
