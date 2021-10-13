@@ -88,12 +88,12 @@ int main(int argc, char *argv[])
         // test existence of the provided file
         if(access(arg_str, F_OK) != 0)
         {
-            printf("EXIT_FAILURE (remember to remove this later).\n");
+           printf("EXIT_FAILURE (remember to remove this later).\n");
             exit(EXIT_FAILURE);
         }
 
         char *hash = strSHA2(arg_str);
-        bool result = find_file(hash);
+        bool result = find_file(f_flag, arg_str, hash);
 
         free(hash);
         free(arg_str);
@@ -111,7 +111,7 @@ int main(int argc, char *argv[])
     }
     else if(h_flag)
     {
-        bool result = find_file(arg_str);
+        bool result = find_file(f_flag, NULL, arg_str);
 
         free(arg_str);
 
