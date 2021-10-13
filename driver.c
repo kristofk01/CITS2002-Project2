@@ -124,10 +124,6 @@ bool find_file(bool f_flag, char *filename, char *hash)
         current = current->next;
     }
 
-    /*I commented this out because for whatever reason one of the input files in -f 
-     *refuses to not be read into the buffer and that was literally driven me insane.
-     *so instead of one nice 
-     */
     int len = strlen(buffer);
     buffer[len] = '\0';
     printf("%s", buffer);
