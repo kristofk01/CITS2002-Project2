@@ -1,19 +1,21 @@
 #include "duplicates.h"
 
-bool list_find(LIST *list, char *str)
+static int nfiles_duplicate = 0;
+
+static LIST *list_find(LIST *list, char *str)
 {
     while(list != NULL)
     {
-        if(strcmp(list->file.name, str) == 0)
+        if(strcmp(list->file.hash, str) == 0)
         {
-            return true;
+            return list;
         }
         list = list->next;
     }
-    return false;
+    return NULL;
 }
 
-LIST *list_new_item(D_FILE file)
+static LIST *list_new_item(D_FILE file)
 {
     LIST *new = malloc( sizeof(LIST) );
     CHECK_ALLOC(new);
@@ -24,7 +26,7 @@ LIST *list_new_item(D_FILE file)
     return new;
 }
 
-LIST *list_add(LIST *list, D_FILE new_file)
+static LIST *list_add(LIST *list, D_FILE new_file)
 {
     if(list_find(list, new_file.hash))
     {
@@ -32,6 +34,7 @@ LIST *list_add(LIST *list, D_FILE new_file)
     }
     else // add to head
     {
+        ++nfiles_duplicate;
         LIST *new   = list_new_item(new_file);
         new->next   = list;
         return new;
@@ -63,18 +66,16 @@ HASHTABLE *hashtable_new(void)
     return new;
 }
 
-void hashtable_add(HASHTABLE *hashtable, D_FILE file)
+int hashtable_add(HASHTABLE *hashtable, D_FILE file)
 {
     uint32_t h   = hash_string(file.hash) % HASHTABLE_SIZE;
     hashtable[h] = list_add(hashtable[h], file);
+
+    return nfiles_duplicate;
 }
 
-/* TODO: delete - unused...
-// str == file.hash
-bool hashtable_find(HASHTABLE *hashtable, char *str)
+LIST *hashtable_find(HASHTABLE *hashtable, char *str)
 {
-    uint32_t h	= hash_string(str) % HASHTABLE_SIZE;
-
+    uint32_t h = hash_string(str) % HASHTABLE_SIZE;
     return list_find(hashtable[h], str);
 }
-*/

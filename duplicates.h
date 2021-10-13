@@ -28,16 +28,17 @@ typedef struct _list
     D_FILE         file;
     struct _list    *next;
 } LIST;
-extern LIST *list_add(LIST *list, D_FILE new_file);
-extern bool list_find (LIST *list, char *str);
 
 typedef LIST *HASHTABLE;
+
 extern HASHTABLE *hashtable_new(void);
-extern void hashtable_add(HASHTABLE *, D_FILE new_file);
-extern bool hashtable_find(HASHTABLE *, char *str);
+extern int hashtable_add(HASHTABLE *, D_FILE new_file);
+extern LIST *hashtable_find(HASHTABLE *, char *str);
 extern uint32_t hash_string(char *string);
 
-//  --------------------------------------------------------------------
-
 extern char *strSHA2(char *filename);
-extern void scan_directory(HASHTABLE *hashtable, char *dirname, bool a_flag);
+
+extern int process_directory(char *dirname, bool a_flag);
+extern bool find_file(char *hash, char *filename);
+
+extern void report_statistics();
