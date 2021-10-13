@@ -96,7 +96,8 @@ static void scan_directory(HASHTABLE *hashtable, char *dirname, bool a_flag)
     closedir(dir);
 }
 
-bool find_file(char *hash)
+
+bool find_file(bool f_flag, char *filename, char *hash)
 {
     LIST *result = hashtable_find(hashtable, hash);
 
@@ -104,8 +105,11 @@ bool find_file(char *hash)
         return false;
 
     char buffer[4096];
-    sprintf(buffer, "%s\n", result->file.name);
-
+    if(!f_flag || (f_flag && strcmp(filename, result->file.name) != 0))
+    {
+        sprintf(buffer, "%s\n", result->file.name);
+    }
+    
     // traverse any duplicates the file may have
     LIST *current = result->next;
     if(current == NULL)
@@ -113,10 +117,17 @@ bool find_file(char *hash)
 
     while(current != NULL)
     {
-        strcat(strcat(buffer, current->file.name), "\n");
+        if(!f_flag ||(f_flag&& strcmp(filename, current->file.name) != 0))
+        {
+            strcat(strcat(buffer, current->file.name), "\n");
+        }
         current = current->next;
     }
 
+    /*I commented this out because for whatever reason one of the input files in -f 
+     *refuses to not be read into the buffer and that was literally driven me insane.
+     *so instead of one nice 
+     */
     int len = strlen(buffer);
     buffer[len] = '\0';
     printf("%s", buffer);
@@ -168,12 +179,18 @@ int process_directory(char *dirname, bool a_flag)
     scan_directory(hashtable, dirname, a_flag);
 
     free(hashtable);
-
     return (statistics.nfiles - statistics.nfiles_unique);
 }
 
 void report_statistics()
 {
+    //Counts the number of unique files and the sum of their size.
+    for(int i = 0; i < nkeys; i++)
+    {
+        statistics.nfiles_unique++;
+        statistics.total_size_unique += hashtable[keys[i]]->file.size;
+    }
+
     // TODO: remove left printf column
     printf("Total files:\t\t");         printf("%u\n", statistics.nfiles);
     printf("Total size:\t\t");          printf("%u\n", statistics.total_size);
