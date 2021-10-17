@@ -1,5 +1,6 @@
 #include <dirent.h>
 #include <sys/param.h>
+#include <sys/stat.h>
 
 #include "duplicates.h"
 
@@ -13,21 +14,18 @@ struct STATS
 
 struct STATS statistics;
 
-static HASHTABLE *hashtable;
-static int *keys;
+static int keys[HASHTABLE_SIZE];
 static int nkeys = 0;
 
 static void add_key(int *keys, int k)
 {
+    // dont't do anything if the key already exists
+    // in the hashtable
     for(int i = 0; i < nkeys; ++i)
         if(k == keys[i])
             return;
 
-    keys = realloc(keys, sizeof(int) * (nkeys+1));
-    CHECK_ALLOC(keys);
-
-    keys[nkeys] = k;
-    ++nkeys;
+    keys[nkeys++] = k;
 }
 
 static void scan_directory(HASHTABLE *hashtable, char *dirname, bool a_flag)
@@ -69,6 +67,7 @@ static void scan_directory(HASHTABLE *hashtable, char *dirname, bool a_flag)
             if(a_flag)
             {
                 int k = hashtable_add(hashtable, file);
+                //printf("-> %i\n", k);
 
                 add_key(keys, k);
 
@@ -78,6 +77,7 @@ static void scan_directory(HASHTABLE *hashtable, char *dirname, bool a_flag)
             else if(!a_flag && strncmp(entry->d_name, ".", 1))
             {
                 int k = hashtable_add(hashtable, file);
+                // printf("-> %i\n", k);
                 
                 add_key(keys, k);
 
@@ -129,7 +129,6 @@ bool find_file(bool f_flag, char *filename, char *hash)
     printf("%s", buffer);
 
     free(result);
-    free(current);
 
     return true;
 }
@@ -152,7 +151,6 @@ void list_duplicates()
         {
             strcat(strcat(buffer, current->file.name), "\t");
 
-            //total_size_duplicate += current->file.size;
             ++this_files_duplicate_count;
 
             current = current->next;
@@ -169,12 +167,8 @@ void list_duplicates()
 
 int process_directory(char *dirname, bool a_flag)
 {
-    hashtable = hashtable_new();
-    keys = malloc(sizeof(int));
-
     scan_directory(hashtable, dirname, a_flag);
 
-    free(hashtable);
     return (statistics.nfiles - statistics.nfiles_unique);
 }
 

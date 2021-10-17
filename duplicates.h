@@ -4,8 +4,6 @@
 #include <string.h>
 #include <stdbool.h>
 
-#include <sys/stat.h>
-
 #if defined(__linux__)
     extern char *strdup(const char *string);
 #endif
@@ -30,6 +28,7 @@ typedef struct _list
 } LIST;
 
 typedef LIST *HASHTABLE;
+HASHTABLE *hashtable;
 
 extern HASHTABLE *hashtable_new(void);
 extern int hashtable_add(HASHTABLE *, D_FILE new_file);
