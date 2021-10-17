@@ -4,16 +4,6 @@
 
 #include "duplicates.h"
 
-struct STATS
-{
-    int nfiles;
-    int nfiles_unique;
-    int total_size;
-    int total_size_unique;
-};
-
-struct STATS statistics;
-
 static int keys[HASHTABLE_SIZE];
 static int nkeys = 0;
 
@@ -26,6 +16,7 @@ static void add_key(int *keys, int k)
             return;
 
     keys[nkeys++] = k;
+    statistics.nfiles_unique += 1;
 }
 
 static void scan_directory(HASHTABLE *hashtable, char *dirname, bool a_flag)
@@ -62,27 +53,18 @@ static void scan_directory(HASHTABLE *hashtable, char *dirname, bool a_flag)
             file.hash = strSHA2(pathname);
             file.name = strdup(pathname);
             file.size = statinfo.st_size;
+            file.inode = statinfo.st_ino;
 
             // handle -a
             if(a_flag)
             {
                 int k = hashtable_add(hashtable, file);
-                //printf("-> %i\n", k);
-
                 add_key(keys, k);
-
-                statistics.nfiles += 1;
-                statistics.total_size += file.size;
             }
             else if(!a_flag && strncmp(entry->d_name, ".", 1))
             {
                 int k = hashtable_add(hashtable, file);
-                // printf("-> %i\n", k);
-                
                 add_key(keys, k);
-
-                statistics.nfiles += 1;
-                statistics.total_size += file.size;
             }
         }
         else if(S_ISDIR(statinfo.st_mode))
@@ -117,7 +99,7 @@ bool find_file(bool f_flag, char *filename, char *hash)
 
     while(current != NULL)
     {
-        if(!f_flag ||(f_flag&& strcmp(filename, current->file.name) != 0))
+        if(!f_flag ||(f_flag && strcmp(filename, current->file.name) != 0))
         {
             strcat(strcat(buffer, current->file.name), "\n");
         }
@@ -177,7 +159,6 @@ void report_statistics()
     //Counts the number of unique files and the sum of their size.
     for(int i = 0; i < nkeys; i++)
     {
-        statistics.nfiles_unique++;
         statistics.total_size_unique += hashtable[keys[i]]->file.size;
     }
 

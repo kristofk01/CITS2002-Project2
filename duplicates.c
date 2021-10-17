@@ -84,6 +84,22 @@ int main(int argc, char *argv[])
         nfiles_duplicate += process_directory(argv[i], a_flag);
     }
 
+    // DEBUG : REMOVE
+    for(int i = 0; i < HASHTABLE_SIZE; ++i)
+    {
+        LIST *current = hashtable[i];
+        if(current == NULL) continue;
+
+        printf("[%i] %s\n", i, current->file.name);
+        while((current = current->next) != NULL)
+        {
+            printf("\t -> %s\n", current->file.name);
+        }
+        printf("###########\n\n");
+
+    }
+    /////////////////
+
 // HANDLE REMAINING FLAGS
     if(f_flag)
     {

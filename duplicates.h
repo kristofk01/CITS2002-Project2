@@ -14,11 +14,12 @@
 
 #define HASHTABLE_SIZE 997
 
-typedef struct
+typedef struct _d_file
 {
     char    *name; // path
     char    *hash;
     int     size;
+    int     inode;
 } D_FILE;
 
 typedef struct _list
@@ -29,6 +30,16 @@ typedef struct _list
 
 typedef LIST *HASHTABLE;
 HASHTABLE *hashtable;
+
+struct STATS
+{
+    int nfiles;
+    int nfiles_unique;
+    int total_size;
+    int total_size_unique;
+};
+
+struct STATS statistics;
 
 extern HASHTABLE *hashtable_new(void);
 extern int hashtable_add(HASHTABLE *, D_FILE new_file);

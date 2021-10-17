@@ -1,10 +1,11 @@
 #include "duplicates.h"
 
-static LIST *list_find(LIST *list, char *str)
+static LIST *list_find(LIST *list, char *str, int inode)
 {
     while(list != NULL)
     {
-        if(strcmp(list->file.hash, str) == 0)
+        if(strcmp(list->file.hash, str) == 0 ||
+            list->file.inode == inode)
         {
             return list;
         }
@@ -26,15 +27,22 @@ static LIST *list_new_item(D_FILE file)
 
 static LIST *list_add(LIST *list, D_FILE new_file)
 {
-    LIST *new   = list_new_item(new_file);
-    new->next   = list;
-    return new;
+    if(list_find(list, "", new_file.inode) != NULL)
+    {
+        return list;
+    }
+    else
+    {
+        statistics.nfiles += 1;
+        statistics.total_size += new_file.size;
+
+        LIST *new   = list_new_item(new_file);
+        new->next   = list;
+        return new;
+    }
 }
 
 //  --------------------------------------------------------------------
-
-//  FUNCTION hash_string() ACCEPTS A STRING PARAMETER,
-//  AND RETURNS AN UNSIGNED 32-BIT INTEGER AS ITS RESULT
 
 uint32_t hash_string(char *string)
 {
@@ -67,5 +75,5 @@ int hashtable_add(HASHTABLE *hashtable, D_FILE file)
 LIST *hashtable_find(HASHTABLE *hashtable, char *str)
 {
     uint32_t h = hash_string(str) % HASHTABLE_SIZE;
-    return list_find(hashtable[h], str);
+    return list_find(hashtable[h], str, -1);
 }
