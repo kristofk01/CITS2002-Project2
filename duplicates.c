@@ -43,7 +43,7 @@ int main(int argc, char *argv[])
                 break;
 
             case 'A':
-                exit(EXIT_FAILURE); // TODO: change
+                exit(EXIT_SUCCESS);
                 break;
 
             case 'f':
@@ -73,14 +73,16 @@ int main(int argc, char *argv[])
     if(argc <= 1)
     {
         usage(program_name);
-        free(program_name);
         exit(EXIT_FAILURE);
     }
 
 // OPEN AND PROCESS DIRECTORIES - IDENTIFY DUPLICATES
+    hashtable = hashtable_new();
     int nfiles_duplicate = 0;
     for(int i = optind; i < argc; i++)
-        nfiles_duplicate = process_directory(argv[i], a_flag);
+    {
+        nfiles_duplicate += process_directory(argv[i], a_flag);
+    }
 
 // HANDLE REMAINING FLAGS
     if(f_flag)
@@ -88,15 +90,14 @@ int main(int argc, char *argv[])
         // test existence of the provided file
         if(access(arg_str, F_OK) != 0)
         {
-           printf("EXIT_FAILURE (remember to remove this later).\n");
+            printf("EXIT_FAILURE (remember to remove this later).\n");
             exit(EXIT_FAILURE);
         }
 
         char *hash = strSHA2(arg_str);
         bool result = find_file(f_flag, arg_str, hash);
 
-        free(hash);
-        free(arg_str);
+        free(hashtable);
 
         if(result)
         {
@@ -113,7 +114,7 @@ int main(int argc, char *argv[])
     {
         bool result = find_file(f_flag, NULL, arg_str);
 
-        free(arg_str);
+        free(hashtable);
 
         if(result)
         {
@@ -132,6 +133,8 @@ int main(int argc, char *argv[])
     }
     else if(q_flag)
     {
+        free(hashtable);
+
         if(nfiles_duplicate == 0)
         {
             printf("EXIT_SUCCESS (remember to remove this later).\n");
@@ -148,5 +151,6 @@ int main(int argc, char *argv[])
         report_statistics();
     }
 
+    free(hashtable);
     exit(EXIT_SUCCESS);
 }
