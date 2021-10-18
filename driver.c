@@ -79,7 +79,7 @@ static void scan_directory(HASHTABLE *hashtable, char *dirname, bool a_flag)
 }
 
 
-bool find_file(bool f_flag, char *filename, char *hash)
+bool find_file(char *filename, char *hash)
 {
     LIST *result = hashtable_find(hashtable, hash);
 
@@ -87,7 +87,7 @@ bool find_file(bool f_flag, char *filename, char *hash)
         return false;
 
     char buffer[4096];
-    if(!f_flag || (f_flag && strcmp(filename, result->file.name) != 0))
+    if(filename == NULL || strcmp(filename, result->file.name) != 0)
     {
         sprintf(buffer, "%s\n", result->file.name);
     }
@@ -99,7 +99,7 @@ bool find_file(bool f_flag, char *filename, char *hash)
 
     while(current != NULL)
     {
-        if(!f_flag ||(f_flag && strcmp(filename, current->file.name) != 0))
+        if(filename == NULL || strcmp(filename, current->file.name) != 0)
         {
             strcat(strcat(buffer, current->file.name), "\n");
         }
