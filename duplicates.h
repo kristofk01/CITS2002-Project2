@@ -12,7 +12,7 @@
 
 //  --------------------------------------------------------------------
 
-#define HASHTABLE_SIZE 99999999
+#define HASHTABLE_SIZE 100000000
 
 typedef struct _d_file
 {
@@ -49,6 +49,6 @@ extern uint32_t hash_string(char *string);
 extern char *strSHA2(char *filename);
 
 extern int process_directory(char *dirname, bool a_flag);
-extern bool find_file(bool f_flag, char *filename, char *hash);
+extern bool find_file(char *filename, char *hash);
 extern void list_duplicates();
 extern void report_statistics();
