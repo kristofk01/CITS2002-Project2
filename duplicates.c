@@ -111,7 +111,7 @@ int main(int argc, char *argv[])
         }
 
         char *hash = strSHA2(arg_str);
-        bool result = find_file(f_flag, arg_str, hash);
+        bool result = find_file(arg_str, hash);
 
         free(hashtable);
 
@@ -128,7 +128,7 @@ int main(int argc, char *argv[])
     }
     else if(h_flag)
     {
-        bool result = find_file(f_flag, NULL, arg_str);
+        bool result = find_file(NULL, arg_str);
 
         free(hashtable);
 
