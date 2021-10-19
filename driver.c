@@ -16,7 +16,6 @@ static void add_key(int *keys, int k)
             return;
 
     keys[nkeys++] = k;
-    statistics.nfiles_unique += 1;
 }
 
 static void scan_directory(HASHTABLE *hashtable, char *dirname, bool a_flag)
@@ -156,11 +155,13 @@ int process_directory(char *dirname, bool a_flag)
 
 void report_statistics()
 {
-    //Counts the number of unique files and the sum of their size.
+    //Counts the size of all unique files.
     for(int i = 0; i < nkeys; i++)
     {
         statistics.total_size_unique += hashtable[keys[i]]->file.size;
     }
+    
+    statistics.total_size_unique = nkeys;
 
     // TODO: remove left printf column
     printf("Total files:\t\t");         printf("%u\n", statistics.nfiles);
