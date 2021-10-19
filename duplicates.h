@@ -12,7 +12,7 @@
 
 //  --------------------------------------------------------------------
 
-#define HASHTABLE_SIZE 100000000
+#define HASHTABLE_SIZE 100000001
 
 typedef struct _d_file
 {
