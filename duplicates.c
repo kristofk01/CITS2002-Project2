@@ -8,6 +8,10 @@
 
 #define OPTLIST "aAmf:h:lq"
 
+//THIS IS JUST FOR TESTING PURPOSES///////////
+#include <time.h>
+//////////////////////////////////////////////
+
 static void usage(char *program_name)
 {
     // TODO: remove m flag if we don't actually end up implementing it
@@ -23,6 +27,11 @@ static void usage(char *program_name)
 
 int main(int argc, char *argv[])
 {
+    ////////////////////TESTING ONLY////////////////////
+    clock_t start, end;
+    start = clock();
+    ////////////////////TESTING ONLY////////////////////
+    
     char *program_name = argv[0];
     int opt;
 
@@ -170,5 +179,11 @@ int main(int argc, char *argv[])
     }
 
     free(hashtable);
+    
+    ////////////////////TESTING ONLY////////////////////
+    end = clock();
+    printf("(INSERT VALUE HERE) sized hashtable took %f seconds to execute\n", ((double) (end - start))/CLOCKS_PER_SEC);
+    ////////////////////TESTING ONLY////////////////////
+    
     exit(EXIT_SUCCESS);
 }
