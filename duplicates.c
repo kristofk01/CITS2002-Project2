@@ -85,6 +85,7 @@ int main(int argc, char *argv[])
     }
 
     // DEBUG : REMOVE
+    /*
     for(int i = 0; i < HASHTABLE_SIZE; ++i)
     {
         LIST *current = hashtable[i];
@@ -98,6 +99,7 @@ int main(int argc, char *argv[])
         printf("###########\n\n");
 
     }
+    */
     /////////////////
 
 // HANDLE REMAINING FLAGS
