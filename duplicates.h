@@ -11,7 +11,7 @@
 #define CHECK_ALLOC(p) if(p == NULL) { perror(__func__); exit(EXIT_FAILURE); }
 
 // https://primes.utm.edu/lists/small/millions/
-#define HASHTABLE_SIZE 217645177 //104395301
+#define HASHTABLE_SIZE 217645177 //104395301 //2^27 is 134217728 (option to optimise it a bit more? Problem is it's not a prime so we're trading space for time.)
 
 typedef struct _d_file
 {
