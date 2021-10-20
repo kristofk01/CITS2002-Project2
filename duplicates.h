@@ -10,16 +10,15 @@
 
 #define CHECK_ALLOC(p) if(p == NULL) { perror(__func__); exit(EXIT_FAILURE); }
 
-//  --------------------------------------------------------------------
-
-#define HASHTABLE_SIZE 100000001
+// https://primes.utm.edu/lists/small/millions/
+#define HASHTABLE_SIZE 217645177 //104395301
 
 typedef struct _d_file
 {
-    char    *name; // path
-    char    *hash;
-    int     size;
-    int     inode;
+    char        *name; // path
+    char        *hash;
+    uint32_t    size;
+    int         inode;
 } D_FILE;
 
 typedef struct _list
@@ -33,10 +32,10 @@ HASHTABLE *hashtable;
 
 struct STATS
 {
-    int nfiles;
-    int nfiles_unique;
-    int total_size;
-    int total_size_unique;
+    uint32_t nfiles;
+    uint32_t nfiles_unique;
+    uint32_t total_size;
+    uint32_t total_size_unique;
 };
 
 struct STATS statistics;
@@ -44,7 +43,6 @@ struct STATS statistics;
 extern HASHTABLE *hashtable_new(void);
 extern int hashtable_add(HASHTABLE *, D_FILE new_file);
 extern LIST *hashtable_find(HASHTABLE *, char *str);
-extern uint32_t hash_string(char *string);
 
 extern char *strSHA2(char *filename);
 
