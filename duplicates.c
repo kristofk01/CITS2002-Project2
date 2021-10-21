@@ -8,13 +8,18 @@
 
 #define OPTLIST "aAmf:h:lq"
 
-//THIS IS JUST FOR TESTING PURPOSES///////////
+/* Used to check how fast the function runs when no command-line
+   option or -a is entered.
 #include <time.h>
-//////////////////////////////////////////////
+*/
 
+/* 
+   Function to report the program's synopsis, should command-line 
+   processing detect any errors.
+   @param *program_name is the faulty argument input.
+*/
 static void usage(char *program_name)
 {
-    // TODO: remove m flag if we don't actually end up implementing it
     printf("Usage: %s [options] <directory...>\n", program_name);
     printf("-a\t\tinclude directory entries whose names begin with a dot (.)\n"
            "-A\t\treport if the program attemps the advanced version\n"
@@ -27,16 +32,19 @@ static void usage(char *program_name)
 
 int main(int argc, char *argv[])
 {
-    ////////////////////TESTING ONLY////////////////////
+/* 
+    Used to check how fast the function runs when no command-line
+    option or -a is entered.
+ 
     clock_t start, end;
     start = clock();
-    ////////////////////TESTING ONLY////////////////////
+*/
     
     char *program_name = argv[0];
     int opt;
 
-    bool a_flag = false; // for -a
-    bool f_flag = false;
+    bool a_flag = false; // booleans that determine which command-line option
+    bool f_flag = false; // was inputted.
     bool h_flag = false;
     bool q_flag = false;
     bool l_flag = false;
@@ -85,7 +93,12 @@ int main(int argc, char *argv[])
         exit(EXIT_FAILURE);
     }
 
-// OPEN AND PROCESS DIRECTORIES - IDENTIFY DUPLICATES
+/* 
+   Processes all directories and adds them to a 
+   hashtable. Every unique 'key' in the hashtable 
+   represents a unique hash, and duplicates are 
+   added to their corresponding hashtable locations.
+*/
     hashtable = hashtable_new();
     int nfiles_duplicate = 0;
     for(int i = optind; i < argc; i++)
@@ -111,10 +124,10 @@ int main(int argc, char *argv[])
     */
     /////////////////
 
-// HANDLE REMAINING FLAGS
+//  Handles the non-empty command-line options that aren't -a.
     if(f_flag)
     {
-        // test existence of the provided file
+//      Test existence of the provided file.
         if(access(arg_str, F_OK) != 0)
         {
             printf("EXIT_FAILURE (remember to remove this later).\n");
@@ -180,10 +193,13 @@ int main(int argc, char *argv[])
 
     free(hashtable);
     
-    ////////////////////TESTING ONLY////////////////////
+/* 
+    Used to check how fast the function runs when no command-line
+    option or -a is entered.
+
     end = clock();
-    printf("(2^28) sized hashtable took %f seconds to execute\n", ((double) (end - start))/CLOCKS_PER_SEC);
-    ////////////////////TESTING ONLY////////////////////
+    printf("(Whatever) sized hashtable took %f seconds to execute\n", ((double) (end - start))/CLOCKS_PER_SEC);
+*/
     
     exit(EXIT_SUCCESS);
 }
