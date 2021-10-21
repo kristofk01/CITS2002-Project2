@@ -1,5 +1,14 @@
 #include "duplicates.h"
 
+/*
+   Function that traverses a linked list to see if
+   any one of the files' hash or inode match
+   with either the input hash or inode.
+   @param *list is the traversed linked list.
+   @param *str is the input hash.
+   @param inode is the input inode.
+   @returns are we returning the list? I can't tell dude
+*/
 static LIST *list_find(LIST *list, char *str, int inode)
 {
     while(list != NULL)
@@ -14,6 +23,11 @@ static LIST *list_find(LIST *list, char *str, int inode)
     return NULL;
 }
 
+/*
+   Function that reallocates memory to allow
+   a file to be appended to the end of a linked list.
+   @param file is the new file to be appended.
+*/
 static LIST *list_new_item(D_FILE file)
 {
     LIST *new = malloc( sizeof(LIST) );
@@ -25,6 +39,14 @@ static LIST *list_new_item(D_FILE file)
     return new;
 }
 
+
+/*
+   Given a file and a linked list, check that the
+   file is not in the linked list. If so, append
+   the file to the end of the linked list.
+   @param *list is the checked linked list.
+   @param new_file is the checked file.
+*/
 static LIST *list_add(LIST *list, D_FILE new_file)
 {
     if(list_find(list, "", new_file.inode) != NULL)
