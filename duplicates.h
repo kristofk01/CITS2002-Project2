@@ -10,11 +10,11 @@
 
 #define CHECK_ALLOC(p) if(p == NULL) { perror(__func__); exit(EXIT_FAILURE); }
 
-// we chose to use a number that is a power of two
-// instead of using a large prime as it gave us better
-// performance
+// We chose to use a number that is a power of two instead 
+// of using a large prime as it gave us better performance.
 #define HASHTABLE_SIZE (1<<28)
 
+// Structure that stores a file's path, hash, size and inode.
 typedef struct _d_file
 {
     char        *name; // path
@@ -23,6 +23,7 @@ typedef struct _d_file
     int         inode;
 } D_FILE;
 
+// Linked List implementation of a hashtable.
 typedef struct _list
 {
     D_FILE         file;
@@ -32,6 +33,8 @@ typedef struct _list
 typedef LIST *HASHTABLE;
 HASHTABLE *hashtable;
 
+// Structure that stores the number of unique and total files,
+// as well as the sizes of both.
 struct STATS
 {
     uint32_t nfiles;
