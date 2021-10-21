@@ -10,9 +10,10 @@
 
 #define CHECK_ALLOC(p) if(p == NULL) { perror(__func__); exit(EXIT_FAILURE); }
 
-// https://primes.utm.edu/lists/small/millions/
-#define HASHTABLE_SIZE 268435457 //2^28 = 268435456 this is basically the largest 2^value we can get 
-                                 //(2^28 + 1) = 268435457 
+// we chose to use a number that is a power of two
+// instead of using a large prime as it gave us better
+// performance
+#define HASHTABLE_SIZE (1<<28)
 
 typedef struct _d_file
 {

@@ -182,7 +182,7 @@ int main(int argc, char *argv[])
     
     ////////////////////TESTING ONLY////////////////////
     end = clock();
-    printf("(INSERT VALUE HERE) sized hashtable took %f seconds to execute\n", ((double) (end - start))/CLOCKS_PER_SEC);
+    printf("(2^28) sized hashtable took %f seconds to execute\n", ((double) (end - start))/CLOCKS_PER_SEC);
     ////////////////////TESTING ONLY////////////////////
     
     exit(EXIT_SUCCESS);
