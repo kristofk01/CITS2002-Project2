@@ -69,7 +69,7 @@ int main(int argc, char *argv[])
         }
     }
 
-    if(argc <= 1|| argv[2] == NULL)
+    (argc <= 1 || argv[2] == NULL || (argv[2] != NULL && argv[3] == NULL))
     {
         usage(program_name);
         exit(EXIT_FAILURE);
