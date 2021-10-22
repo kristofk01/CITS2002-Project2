@@ -16,8 +16,8 @@ static void usage(char *program_name)
            "-A\t\treport if the program attemps the advanced version\n"
            "-f=FILENAME\tlist all files whose SHA2 hash matches that of the indicated file\n"
            "-h=HASH\t\tlist all files with the indicated SHA2 hash\n"
-           "-l\t\tlist all duplicates files\n"
-           "-q\t\tquietly test if any duplicates files exist\n\n");
+           "-l\t\tlist all duplicate files\n"
+           "-q\t\tquietly test if any duplicate files exist\n\n");
 }
 
 int main(int argc, char *argv[])
