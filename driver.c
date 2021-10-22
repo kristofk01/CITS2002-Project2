@@ -178,24 +178,8 @@ int process_directory(char *dirname, bool a_flag)
  */
 void report_statistics()
 {
-    //This stuff's just for checking Advanced Task 2. TODO: REMOVE
-    /*
-    for(int i = 0; i < nkeys; i++)
-    {
-        printf("File:%s, Inode:%u, Size:%u\n", hashtable[keys[i]]->file.name, hashtable[keys[i]]->file.inode,hashtable[keys[i]]->file.size);
-        LIST *current = hashtable[keys[i]]->next;
-        while(current != NULL)
-        {
-            printf("File:%s, Inode:%u, Size:%u\n",current->file.name, current->file.inode, current->file.size);
-            current = current->next;
-        }
-    }
-    */
-    //////////////////////////////////////////////////////////////
-    
-
-    printf("Number of files:        "); printf("%u\n", statistics.nfiles);
-    printf("Total size of files:    "); printf("%u\n", statistics.total_size);
-    printf("Number of unique files: "); printf("%u\n", statistics.nfiles_unique);
-    printf("Total size of unique:   "); printf("%u\n", statistics.total_size_unique);
+    printf("%u\n", statistics.nfiles);
+    printf("%u\n", statistics.total_size);
+    printf("%u\n", statistics.nfiles_unique);
+    printf("%u\n", statistics.total_size_unique);
 }
