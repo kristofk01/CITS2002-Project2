@@ -1,14 +1,10 @@
 #include "duplicates.h"
 
 /*
-   Function that traverses a linked list to see if
-   any one of the files' hash or inode match
-   with either the input hash or inode.
-   @param *list is the traversed linked list.
-   @param *str is the input hash.
-   @param inode is the input inode.
-   @returns are we returning the list? I can't tell dude
-*/
+ * Function that traverses a linked list to see if
+ * any one of the files' hash or inode match
+ * with either the input hash or inode.
+ */
 static LIST *list_find(LIST *list, char *str, int inode)
 {
     while(list != NULL)
@@ -24,10 +20,9 @@ static LIST *list_find(LIST *list, char *str, int inode)
 }
 
 /*
-   Function that reallocates memory to allow
-   a file to be appended to the end of a linked list.
-   @param file is the new file to be appended.
-*/
+ * Function that reallocates memory to allow
+ * a file to be appended to the end of a linked list.
+ */
 static LIST *list_new_item(D_FILE file)
 {
     LIST *new = malloc( sizeof(LIST) );
@@ -39,14 +34,11 @@ static LIST *list_new_item(D_FILE file)
     return new;
 }
 
-
 /*
-   Given a file and a linked list, check that the
-   file is not in the linked list. If so, append
-   the file to the end of the linked list.
-   @param *list is the checked linked list.
-   @param new_file is the checked file.
-*/
+ * Given a file and a list element, check that the
+ * file is not in the linked list. If so, append
+ * the file to the end of the linked list.
+ */
 static LIST *list_add(LIST *list, D_FILE new_file)
 {
     if(list_find(list, "", new_file.inode) != NULL)
@@ -64,8 +56,9 @@ static LIST *list_add(LIST *list, D_FILE new_file)
     }
 }
 
-//  --------------------------------------------------------------------
-
+/*
+ * Produce a unique value of a string using a simple hash function.
+ */
 uint32_t hash_string(char *string)
 {
     uint32_t hash = 0;
@@ -78,6 +71,9 @@ uint32_t hash_string(char *string)
     return hash;
 }
 
+/*
+ * Initialise a hashtable by allocating sufficient memory.
+ */
 HASHTABLE *hashtable_new(void)
 {
     HASHTABLE   *new = malloc(HASHTABLE_SIZE * sizeof(LIST *));
@@ -86,6 +82,9 @@ HASHTABLE *hashtable_new(void)
     return new;
 }
 
+/*
+ * Add a new file to a given hashtable
+ */
 int hashtable_add(HASHTABLE *hashtable, D_FILE file)
 {
     uint32_t h   = hash_string(file.hash) % HASHTABLE_SIZE;
@@ -94,6 +93,9 @@ int hashtable_add(HASHTABLE *hashtable, D_FILE file)
     return h;
 }
 
+/*
+ * Find a file in a given hashtable using the file's SHA2 hash
+ */
 LIST *hashtable_find(HASHTABLE *hashtable, char *str)
 {
     uint32_t h = hash_string(str) % HASHTABLE_SIZE;

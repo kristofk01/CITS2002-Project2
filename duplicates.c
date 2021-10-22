@@ -6,18 +6,9 @@
 #include <getopt.h>
 #include "duplicates.h"
 
-#define OPTLIST "aAmf:h:lq"
+#define OPTLIST "aAf:h:lq"
 
-/* Used to check how fast the function runs when no command-line
-   option or -a is entered.
-#include <time.h>
-*/
-
-/* 
-   Function to report the program's synopsis, should command-line 
-   processing detect any errors.
-   @param *program_name is the faulty argument input.
-*/
+// Report the program's synopsis, should command-line processing detect any errors.
 static void usage(char *program_name)
 {
     printf("Usage: %s [options] <directory...>\n", program_name);
@@ -26,25 +17,16 @@ static void usage(char *program_name)
            "-f=FILENAME\tlist all files whose SHA2 hash matches that of the indicated file\n"
            "-h=HASH\t\tlist all files with the indicated SHA2 hash\n"
            "-l\t\tlist all duplicates files\n"
-           "-m\t\tminimizes the total number of bytes required to store all files' data\n"
            "-q\t\tquietly test if any duplicates files exist\n\n");
 }
 
 int main(int argc, char *argv[])
 {
-/* 
-    Used to check how fast the function runs when no command-line
-    option or -a is entered.
- 
-    clock_t start, end;
-    start = clock();
-*/
-    
     char *program_name = argv[0];
     int opt;
 
-    bool a_flag = false; // booleans that determine which command-line option
-    bool f_flag = false; // was inputted.
+    bool a_flag = false;
+    bool f_flag = false;
     bool h_flag = false;
     bool q_flag = false;
     bool l_flag = false;
@@ -93,12 +75,10 @@ int main(int argc, char *argv[])
         exit(EXIT_FAILURE);
     }
 
-/* 
-   Processes all directories and adds them to a 
-   hashtable. Every unique 'key' in the hashtable 
-   represents a unique hash, and duplicates are 
-   added to their corresponding hashtable locations.
-*/
+    /* 
+     * Processes all directories and add them to the hashtable.
+     * Each hashtable entry represents a file and it's duplicates.
+     */
     hashtable = hashtable_new();
     int nfiles_duplicate = 0;
     for(int i = optind; i < argc; i++)
@@ -124,7 +104,7 @@ int main(int argc, char *argv[])
     */
     /////////////////
 
-//  Handles the non-empty command-line options that aren't -a.
+//  Handle the non-empty command-line options that aren't -a.
     if(f_flag)
     {
 //      Test existence of the provided file.
@@ -192,14 +172,6 @@ int main(int argc, char *argv[])
     }
 
     free(hashtable);
-    
-/* 
-    Used to check how fast the function runs when no command-line
-    option or -a is entered.
-
-    end = clock();
-    printf("(Whatever) sized hashtable took %f seconds to execute\n", ((double) (end - start))/CLOCKS_PER_SEC);
-*/
     
     exit(EXIT_SUCCESS);
 }
