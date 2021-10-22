@@ -71,7 +71,7 @@ int main(int argc, char *argv[])
     argv += optind;
     argc -= optind;
 
-    if(argc <= 1)
+    if(argc < 1)
     {
         usage(program_name);
         exit(EXIT_FAILURE);
@@ -83,7 +83,7 @@ int main(int argc, char *argv[])
      */
     hashtable = hashtable_new();
     int nfiles_duplicate = 0;
-    for(int i = optind; i < argc; i++)
+    for(int i = 0; i < argc; i++)
     {
         nfiles_duplicate += process_directory(argv[i], a_flag);
     }
