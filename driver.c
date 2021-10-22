@@ -13,7 +13,7 @@ static int nkeys = 0;
  */
 static void add_key(int *keys, int k)
 {
-//  Dont't do anything if the key already exists in the hashtable
+//  Don't do anything if the key already exists in the hashtable.
     for(int i = 0; i < nkeys; ++i)
         if(k == keys[i])
             return;
