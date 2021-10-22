@@ -84,19 +84,14 @@ int main(int argc, char *argv[])
     hashtable = hashtable_new();
     int nfiles_duplicate = 0;
     for(int i = 0; i < argc; i++)
-    {
         nfiles_duplicate += process_directory(argv[i], a_flag);
-    }
 
 //  Handle the non-empty command-line options that aren't -a.
     if(f_flag)
     {
 //      Test existence of the provided file.
         if(access(arg_str, F_OK) != 0)
-        {
-            printf("EXIT_FAILURE (remember to remove this later).\n");
             exit(EXIT_FAILURE);
-        }
 
         char *hash = strSHA2(arg_str);
         bool result = find_file(arg_str, hash);
@@ -104,15 +99,9 @@ int main(int argc, char *argv[])
         free(hashtable);
 
         if(result)
-        {
-            printf("EXIT_SUCCESS (remember to remove this later).\n");
             exit(EXIT_SUCCESS);
-        }
         else
-        {
-            printf("EXIT_FAILURE (remember to remove this later).\n");
             exit(EXIT_FAILURE);
-        }
     }
     else if(h_flag)
     {
@@ -121,15 +110,9 @@ int main(int argc, char *argv[])
         free(hashtable);
 
         if(result)
-        {
-            printf("EXIT_SUCCESS (remember to remove this later).\n");
             exit(EXIT_SUCCESS);
-        }
         else
-        {
-            printf("EXIT_FAILURE (remember to remove this later).\n");
             exit(EXIT_FAILURE);
-        }
     }
     else if(l_flag)
     {
@@ -140,15 +123,9 @@ int main(int argc, char *argv[])
         free(hashtable);
 
         if(nfiles_duplicate == 0)
-        {
-            printf("EXIT_SUCCESS (remember to remove this later).\n");
             exit(EXIT_SUCCESS);
-        }
         else
-        {
-            printf("EXIT_FAILURE (remember to remove this later).\n");
             exit(EXIT_FAILURE);
-        }
     }
     else
     {
