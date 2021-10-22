@@ -68,8 +68,10 @@ int main(int argc, char *argv[])
                 break;
         }
     }
+    argv += optind;
+    argc -= optind;
 
-    if(argc <= 1|| argv[2] == NULL)
+    if(argc <= 1)
     {
         usage(program_name);
         exit(EXIT_FAILURE);
