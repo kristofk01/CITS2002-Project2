@@ -47,7 +47,6 @@ static void scan_directory(HASHTABLE *hashtable, char *dirname, bool a_flag)
         sprintf(pathname, "%s/%s", dirname, entry->d_name);
         
         struct stat statinfo;
-        //if(lstat(pathname, &statinfo) != 0)
         if(stat(pathname, &statinfo) != 0)
         {
             perror(pathname);
@@ -55,7 +54,6 @@ static void scan_directory(HASHTABLE *hashtable, char *dirname, bool a_flag)
         }
 
 //      If the current entry is a file or a symbolic link, add it to the hashtable.
-        //if(S_ISREG(statinfo.st_mode) || S_ISLNK(statinfo.st_mode))
         if(S_ISREG(statinfo.st_mode))
         {
             D_FILE file;
