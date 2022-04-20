@@ -53,5 +53,5 @@ Desktop/onemore.txt
 ```
 Where `myfile.txt` has a SHA2 hash of `c15019ab522a5b2afdca268fd6b60faf05c54d7c5d902bafc9b23875`.
 
-## Caveats
+## Limitations
 Due to our choice of using a hashtable to keep track of all files (unique and duplicate), a core limitation in our design is that the number of files that can be checked is restricted. Currently, the accuracy of reporting degrades as the number of files reaches this limit (`2^28`, i.e. our hashtable size).
